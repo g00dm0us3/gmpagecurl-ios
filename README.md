@@ -10,6 +10,7 @@ A page curl effect for iOS using Metal.
     - Remove unused code at this point - depth testing / light (both shader and project, put it in a garbage file)
     - General refactoring
 - Add rotation / zooming gestures, along with 𝛗 / displacement selection selection (for demo).
+- Add switch btw. rectangular (box, first step), and cylindrical views.
 
 
 ### Long Term
