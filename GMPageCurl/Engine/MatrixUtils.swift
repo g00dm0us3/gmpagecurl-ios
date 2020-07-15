@@ -54,11 +54,6 @@ struct MatrixUtils {
         let zScale = -(far + near) / zRange;
         let wzScale = -2 * far * near / zRange;
 
-        /*vector_float4 P = { xScale, 0, 0, 0 };
-        vector_float4 Q = { 0, yScale, 0, 0 };
-        vector_float4 R = { 0, 0, zScale, -1 };
-        vector_float4 S = { 0, 0, wzScale, 0 };*/
-
         return simd_float4x4([
             float4(arrayLiteral: xScale, 0, 0, 0),
             float4(arrayLiteral: 0, yScale, 0, 0),

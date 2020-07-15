@@ -43,10 +43,6 @@ class RenderingViewController: UIViewController {
         cadDisplayLink.add(to: RunLoop.main, forMode: RunLoop.Mode.default)
     }
     
-    func startReplaying() {
-        
-    }
-    
     @objc
     func redraw() {
         guard let mtlLayer = renderingView.layer as? CAMetalLayer else { fatalError("This should be rendering layer!") }
