@@ -26,12 +26,10 @@ class Renderer {
         model = Model()
         
         metalLayer = CAMetalLayer()
-        metalLayer.device = device
+        metalLayer.device = RenderingDevice.defaultDevice
         metalLayer.pixelFormat = MTLPixelFormat.bgra8Unorm
         
         renderingPipeline = RenderingPipeline()
-        
-        texture = createTexture()
     }
     
     public func setMetalLayerFrame(frame: CGRect) {
@@ -50,11 +48,11 @@ class Renderer {
         let drawable = getCurrentDrawable()
         let primitiveType = MTLPrimitiveType.line
         
-        let renderPassDescriptor = renderingPipeline.renderPassDescriptorForTexture(texture: drawable?.texture)
+        let renderPassDescriptor = renderingPipeline.renderPassDescriptor()
         
         renderPassDescriptor.colorAttachments[0].texture = drawable?.texture
-        //renderPassDescriptor.depthAttachment = nil
-        var renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor)!
+        
+        let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor)!
         renderEncoder.pushDebugGroup("COLOR")
         renderEncoder.label = "CL"
         
@@ -62,14 +60,10 @@ class Renderer {
         renderEncoder.setCullMode(MTLCullMode.none)
         
         renderEncoder.setRenderPipelineState(renderingPipeline.colorPipelineState!)
-        
-        //renderEncoder.setDepthStencilState(renderingPipeline.depthStencilState!)
-        
-        //renderEncoder.setFragmentTexture(renderingPipeline.shadowTexture!, index: 0)
+
         renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
         renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 1)
         renderEncoder.setVertexBuffer(inputBuffer, offset: 0, index: 2)
-        //renderEncoder.setFragmentTexture(texture, index: 1)
 
         //set vertex buffer for matrix
         renderEncoder.drawPrimitives(type: primitiveType, vertexStart: 0, vertexCount: model.vertexCount)

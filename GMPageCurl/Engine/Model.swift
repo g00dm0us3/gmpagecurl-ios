@@ -55,11 +55,7 @@ class Model: Equatable {
             res.m20 = matrix4.m20
             res.m21 = matrix4.m21
             res.m22 = matrix4.m22
-            
-            
-            
-            
-            
+
             return GLKMatrix3InvertAndTranspose(res, nil)
         }
     }
@@ -157,7 +153,6 @@ class Model: Equatable {
         perspectiveMatrix = GLKMatrix4MakePerspective( GLKMathDegreesToRadians(90.0), aspectRatio, 0.1, 100)
         
         
-        
         let orthoMatrix = perspectiveMatrix
         //0.23, 0.3, 3
         let depthViewMatrix = GLKMatrix4MakeLookAt(0, 0.0, 1, 0, 0.0, 0, 0, 1, 0)
@@ -202,7 +197,7 @@ class Model: Equatable {
     
     //tesselating a grid into triangle strip
     private func createGrid(_ rows: Int, _ columns: Int, _ r: Float, _ g: Float, _ b:Float, _ a: Float)
-        ->[Vertex] {
+        -> [Vertex] {
             var res: [Vertex] = []
             
             let stepX: Float = Float(pageWidth / Float(columns))

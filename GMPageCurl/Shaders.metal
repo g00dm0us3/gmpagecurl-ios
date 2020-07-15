@@ -58,8 +58,8 @@ bool should_transform(packed_float3 vi, float phi, float xCoord) {
         return vi.x > xCoord;
     }
 
-    float2 a = rot(float2(xCoord, -1), phi);
-    float2 b = rot(float2(xCoord, 1), phi);
+    float2 a = rot(float2(xCoord, 1), phi);
+    float2 b = rot(float2(xCoord, -1), phi);
     
     /// @note:  Fast Robust Prdicates For Computational Geometry, https://www.cs.cmu.edu/~quake/robust.html
     

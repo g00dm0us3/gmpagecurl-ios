@@ -15,22 +15,8 @@ class RenderingPipeline {
     private var commandQueue: MTLCommandQueue!
     private var defaultLibrary: MTLLibrary!
     
-    
-    //render pass descriptors
-    private(set) var shadowRenderPassDescriptor: MTLRenderPassDescriptor? = nil
-    
     //pipeline states
-    
     private(set) var colorPipelineState: MTLRenderPipelineState? = nil
-    private(set) var shadowPipelineState: MTLRenderPipelineState? = nil
-    
-    //depth stencil state
-    
-    private(set) var shadowDepthStencilState: MTLDepthStencilState? = nil
-    private(set) var depthStencilState: MTLDepthStencilState? = nil
-    
-    private(set) var shadowTexture: MTLTexture?
-    private var depthTexture:MTLTexture?
     
     init() {
         device = RenderingDevice.defaultDevice
@@ -45,12 +31,7 @@ class RenderingPipeline {
         return commandQueue.makeCommandBuffer()! //make stored property
     }
     
-    private func getComputePipelineState() throws ->MTLComputePipelineState {
-        let adjustmentFunction = defaultLibrary.makeFunction(name: "adjust_pos_normals")!
-        return try device.makeComputePipelineState(function: adjustmentFunction)
-    }
-    
-    public func renderPassDescriptorForTexture(texture: MTLTexture!) -> MTLRenderPassDescriptor {
+    public func renderPassDescriptor() -> MTLRenderPassDescriptor {
         let renderPassDscriptor = MTLRenderPassDescriptor()
         renderPassDscriptor.colorAttachments[0].loadAction = MTLLoadAction.clear
         renderPassDscriptor.colorAttachments[0].clearColor = MTLClearColorMake(1, 1, 1, 1)

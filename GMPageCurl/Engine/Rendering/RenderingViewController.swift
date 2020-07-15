@@ -33,7 +33,6 @@ class RenderingViewController: UIViewController {
         renderer = Renderer()
         model = Model()
         
-        
         super.init(coder: aDecoder)
     }
     
@@ -63,7 +62,7 @@ class RenderingViewController: UIViewController {
             
         }
         
-        renderer.render(model: model)
+        renderer.render()
         
         renderer.resetCurrentDrawable()
     }

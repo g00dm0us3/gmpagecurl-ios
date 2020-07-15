@@ -10,12 +10,16 @@ import Foundation
 import Metal
 
 class RenderingDevice {
-    static let shared = RenderingDevice();
-    
-    private(set) var device: MTLDevice!;
-    
-    private init(){
-        device = MTLCreateSystemDefaultDevice()
+    static var defaultDevice: MTLDevice {
+        let dev = RenderingDevice()
+        return dev.device
     }
     
+    private var device: MTLDevice
+    
+    private init() {
+        guard let device = MTLCreateSystemDefaultDevice() else { fatalError("Couldn't create Metal device!") }
+        
+        self.device = device
+    }    
 }
