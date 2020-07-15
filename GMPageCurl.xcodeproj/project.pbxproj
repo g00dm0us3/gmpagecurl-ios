@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E514A5A224BF0AD800ED988D /* RenderingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E514A5A124BF0AD800ED988D /* RenderingView.swift */; };
 		E518896C22703D2B00D2541C /* ComputeKernel.metal in Sources */ = {isa = PBXBuildFile; fileRef = E518896B22703D2B00D2541C /* ComputeKernel.metal */; };
 		E5A98933226F04BD00A13B34 /* RenderingPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5A98932226F04BD00A13B34 /* RenderingPipeline.swift */; };
 		E5AB192022725A17007521F5 /* MatrixUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5AB191F22725A17007521F5 /* MatrixUtils.swift */; };
@@ -36,6 +37,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E514A5A124BF0AD800ED988D /* RenderingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingView.swift; sourceTree = "<group>"; };
 		E518896B22703D2B00D2541C /* ComputeKernel.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ComputeKernel.metal; sourceTree = "<group>"; };
 		E5A98932226F04BD00A13B34 /* RenderingPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingPipeline.swift; sourceTree = "<group>"; };
 		E5AB191F22725A17007521F5 /* MatrixUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixUtils.swift; sourceTree = "<group>"; };
@@ -147,6 +149,7 @@
 				E5C75318223D0F15004D46CA /* Renderer.swift */,
 				E5C75321223D1BAE004D46CA /* RenderingViewController.swift */,
 				E5A98932226F04BD00A13B34 /* RenderingPipeline.swift */,
+				E514A5A124BF0AD800ED988D /* RenderingView.swift */,
 			);
 			path = Rendering;
 			sourceTree = "<group>";
@@ -263,6 +266,7 @@
 				E5C75316223D0E3F004D46CA /* Model.swift in Sources */,
 				E5A98933226F04BD00A13B34 /* RenderingPipeline.swift in Sources */,
 				E5AB192022725A17007521F5 /* MatrixUtils.swift in Sources */,
+				E514A5A224BF0AD800ED988D /* RenderingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

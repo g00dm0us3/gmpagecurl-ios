@@ -11,35 +11,33 @@ import UIKit
 
 
 class RenderingViewController: UIViewController {
-    
-    var renderer: Renderer;
-    var cadDisplayLink: CADisplayLink!;
-    
-    var layerSizeDidUpdate: Bool!;
-    
-    var model:Model;
-
+    var renderer: Renderer
+    var cadDisplayLink: CADisplayLink!
+    var renderingView: RenderingView!
     
     init() {
-        layerSizeDidUpdate = false;
         renderer = Renderer()
-        model = Model()
-        
         super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder aDecoder: NSCoder) {
-        layerSizeDidUpdate = false;
         renderer = Renderer()
-        model = Model()
         
         super.init(coder: aDecoder)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.layer.addSublayer(renderer.metalLayer)
-        view.contentScaleFactor = UIScreen.main.scale
+        
+        renderingView = RenderingView(frame: CGRect.zero)
+        renderingView.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.addSubview(renderingView)
+        
+        renderingView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        renderingView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        renderingView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        renderingView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         
         cadDisplayLink = CADisplayLink(target: self, selector: #selector(redraw))
         cadDisplayLink.add(to: RunLoop.main, forMode: RunLoop.Mode.default)
@@ -51,35 +49,7 @@ class RenderingViewController: UIViewController {
     
     @objc
     func redraw() {
-        if(layerSizeDidUpdate) {
-            let scale = view.window!.screen.scale
-            var drawableSize = view.bounds.size
-            
-            drawableSize.width = drawableSize.width * scale
-            drawableSize.height = drawableSize.height * scale
-            
-            layerSizeDidUpdate = false
-            
-        }
-        
-        renderer.render()
-        
-        renderer.resetCurrentDrawable()
+        guard let mtlLayer = renderingView.layer as? CAMetalLayer else { fatalError("This should be rendering layer!") }
+        renderer.render(in: mtlLayer)
     }
-    
-    override func viewDidLayoutSubviews() {
-        layerSizeDidUpdate = true
-        let parentSize  = view.bounds.size
-        
-        /*let frame = CGRect.init(x: (parentSize.width - minSize)/2.0,
-         y: (parentSize.height - minSize)/2.0,
-         width: minSize, height: minSize)*/
-        
-        let frame = CGRect.init(x: 0,
-                                y: 0,
-                                width: parentSize.width, height: parentSize.height)
-        
-        renderer.setMetalLayerFrame(frame: frame)
-    }
-    
 }

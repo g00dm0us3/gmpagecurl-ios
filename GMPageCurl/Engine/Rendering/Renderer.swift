@@ -13,7 +13,6 @@ import GLKit
 import CoreGraphics
 
 class Renderer {
-    private(set) var metalLayer: CAMetalLayer!
     private var vertexBuffer: MTLBuffer?
     private var uniformBuffer: MTLBuffer?
     private var inputBuffer: MTLBuffer?
@@ -24,33 +23,21 @@ class Renderer {
     
     init() {
         model = Model()
-        
-        metalLayer = CAMetalLayer()
-        metalLayer.device = RenderingDevice.defaultDevice
-        metalLayer.pixelFormat = MTLPixelFormat.bgra8Unorm
-        
         renderingPipeline = RenderingPipeline()
     }
-    
-    public func setMetalLayerFrame(frame: CGRect) {
-        metalLayer.frame = frame
-    }
-    
-    public func resetCurrentDrawable() {
-        currentDrawable = nil;
-    }
 
-    func render() {
+    func render(in layer: CAMetalLayer) {
+        
         fillBuffers()
         
         let commandBuffer = renderingPipeline.getCommandBuffer()
         
-        let drawable = getCurrentDrawable()
+        let drawable = self.drawable(from: layer)
         let primitiveType = MTLPrimitiveType.line
         
         let renderPassDescriptor = renderingPipeline.renderPassDescriptor()
         
-        renderPassDescriptor.colorAttachments[0].texture = drawable?.texture
+        renderPassDescriptor.colorAttachments[0].texture = drawable.texture
         
         let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor)!
         renderEncoder.pushDebugGroup("COLOR")
@@ -70,24 +57,24 @@ class Renderer {
         renderEncoder.popDebugGroup()
         renderEncoder.endEncoding()
         
-        commandBuffer.present(drawable!)
+        commandBuffer.present(drawable)
         commandBuffer.commit()
     }
     
-    private func getCurrentDrawable() -> CAMetalDrawable! {
+    private func drawable(from layer: CAMetalLayer) -> CAMetalDrawable {
         //drawable can be nil if offscreen
         //or if taken too long to render
         //drawable is returned from command buffer
         
+        currentDrawable = nil
         while(currentDrawable == nil) {
-            currentDrawable = metalLayer.nextDrawable()
+            currentDrawable = layer.nextDrawable()
         }
         
         return currentDrawable!
-        
     }
     
-    private func fillBuffers(){
+    private func fillBuffers() {
         makeBuffers()
         
         guard let uniformBufferPointer = uniformBuffer?.contents() else { fatalError("Couldn't access buffer") }
