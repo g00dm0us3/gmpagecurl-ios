@@ -92,8 +92,8 @@ class Renderer {
         
         guard let uniformBufferPointer = uniformBuffer?.contents() else { fatalError("Couldn't access buffer") }
         
-        var modelMatrix = MatrixUtils.glk4x4tosimd(mat: model.modelViewMatrix)
-        var perspectiveMatrix = MatrixUtils.glk4x4tosimd(mat: model.perspectiveMatrix)
+        var modelMatrix = model.modelViewMatrix
+        var perspectiveMatrix = model.perspectiveMatrix
         
         memcpy(uniformBufferPointer, &modelMatrix, MatrixUtils.matrix4x4Size)
         memcpy(uniformBufferPointer + MatrixUtils.matrix4x4Size, &perspectiveMatrix, MatrixUtils.matrix4x4Size)

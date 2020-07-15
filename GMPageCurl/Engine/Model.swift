@@ -28,38 +28,15 @@ class Model: Equatable {
     private let pageWidth:Float = 2.0 // in normalized coords
     private let pageHeight: Float = 2.0 // in normalized coords
     
-    var glkMatrix: GLKMatrix4
-    var matrix4: GLKMatrix4
-    
     private let screenWidth:Float = 325.0 // RenderingViewController width - height
     private let screenHeight:Float = 667.0
     
-    var modelViewMatrix: GLKMatrix4 {
+    var modelViewMatrix: simd_float4x4 {
         get {
             return matrix4
         }
     }
-    
-    var normalMatrix: GLKMatrix3 {
-        get {
-            
-            var res = GLKMatrix3Identity
-            res.m00 = matrix4.m00
-            res.m01 = matrix4.m01
-            res.m02 = matrix4.m02
-            
-            res.m10 = matrix4.m10
-            res.m11 = matrix4.m11
-            res.m12 = matrix4.m12
-            
-            res.m20 = matrix4.m20
-            res.m21 = matrix4.m21
-            res.m22 = matrix4.m22
 
-            return GLKMatrix3InvertAndTranspose(res, nil)
-        }
-    }
-    
     var replaying: Bool = false
     
     var displacement: Float
@@ -131,10 +108,8 @@ class Model: Equatable {
         return displacement
     }
     
-    private(set) var perspectiveMatrix: GLKMatrix4
-    
-    public var depthMVP: GLKMatrix4
-    public var depthBiasMVP: GLKMatrix4;
+    private(set) var perspectiveMatrix: simd_float4x4
+    var matrix4: simd_float4x4
     
     var vertexCount: Int {
         get {
@@ -143,39 +118,22 @@ class Model: Equatable {
     }
     
     init() {
-        glkMatrix = GLKMatrix4Identity
-        
         displacement = 1
         phi = 0
-        matrix4 = glkMatrix
-        
-        let aspectRatio:Float = 1//(Float(screenWidth / screenHeight))
-        perspectiveMatrix = GLKMatrix4MakePerspective( GLKMathDegreesToRadians(90.0), aspectRatio, 0.1, 100)
         
         
-        let orthoMatrix = perspectiveMatrix
-        //0.23, 0.3, 3
-        let depthViewMatrix = GLKMatrix4MakeLookAt(0, 0.0, 1, 0, 0.0, 0, 0, 1, 0)
-        let depthModelMatrix = GLKMatrix4Scale(GLKMatrix4Identity, aspectRatio, 1, 1)
-        
-        
-        
-        //for shadow sampling
-        let depthBiasMatrix = GLKMatrix4Identity;
+        let aspectRatio:Float = 1
+        perspectiveMatrix = MatrixUtils.matrix_perspective(aspect: 1, fovy: 90.0, near: 0.1, far: 100)
 
-        depthMVP = GLKMatrix4Multiply(GLKMatrix4Multiply(orthoMatrix, depthViewMatrix), depthModelMatrix)
-        depthBiasMVP = GLKMatrix4Multiply(depthBiasMatrix, depthMVP);
-
-        vertices = createGrid(rows, columns, 0.0, 0.0, 1.0, 1.0)
-        
-    
-        var worldMatrix = GLKMatrix4Identity;
+        var worldMatrix = MatrixUtils.identityMatrix4x4
         
         // z = 1/(tan(fov/2))
-        worldMatrix = GLKMatrix4Translate(worldMatrix, 0, 0, -1.1)
-        worldMatrix = GLKMatrix4Scale(worldMatrix, aspectRatio, 1.0, 1.0)
+        worldMatrix = worldMatrix*MatrixUtils.matrix4x4Translate(t: simd_float3(arrayLiteral: 0, 0, -1.1))//GLKMatrix4Translate(worldMatrix, 0, 0, -1.1)
+        worldMatrix = worldMatrix*MatrixUtils.matrix4x4Scale(scale: simd_float3(arrayLiteral: aspectRatio, 1, 1))//GLKMatrix4Scale(worldMatrix, aspectRatio, 1.0, 1.0)
         
         matrix4 = worldMatrix
+        
+        vertices = createGrid(rows, columns, 0, 0, 1, 1)
     }
     
     func printM4(_ m: GLKMatrix4) {
