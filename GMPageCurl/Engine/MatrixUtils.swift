@@ -29,4 +29,8 @@ struct MatrixUtils {
             float3(arrayLiteral: mat.m20, mat.m21, mat.m22)
             ])
     }
+    
+    static var matrix4x4Size: Int {
+        return MemoryLayout<simd_float4x4>.size
+    }
 }
