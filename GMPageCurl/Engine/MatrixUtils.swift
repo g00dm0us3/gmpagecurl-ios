@@ -7,14 +7,14 @@
 //
 
 import Foundation
-import GLKit
+import simd
 
 struct MatrixUtils {
 
     static var matrix4x4Size: Int {
         return MemoryLayout<simd_float4x4>.size
     }
-    
+
     static var identityMatrix4x4: simd_float4x4 {
         return simd_float4x4([
             float4(arrayLiteral: 1, 0, 0, 0),
@@ -23,7 +23,7 @@ struct MatrixUtils {
             float4(arrayLiteral: 0, 0, 0, 1)
         ])
     }
-    
+
     static func matrix4x4Translate(t: simd_float3) -> simd_float4x4 {
         return simd_float4x4([
             float4(arrayLiteral: 1, 0, 0, 0),
@@ -32,7 +32,7 @@ struct MatrixUtils {
             float4(arrayLiteral: t.x, t.y, t.z, 1)
         ])
     }
-    
+
     static func matrix4x4Scale(scale: simd_float3) -> simd_float4x4 {
         return simd_float4x4([
             float4(arrayLiteral: scale.x, 0, 0, 0),
@@ -41,18 +41,17 @@ struct MatrixUtils {
             float4(arrayLiteral: 0, 0, 0, 1)
         ])
     }
-    
+
     /// - todo: rotation around origin
-    
-    static func matrix_perspective(aspect: Float, fovy: Float, near: Float, far: Float) -> simd_float4x4
-    {
+
+    static func matrix_perspective(aspect: Float, fovy: Float, near: Float, far: Float) -> simd_float4x4 {
         let rad = fovy*Float.pi / 180.0
-        
-        let yScale = 1 / tan(rad * 0.5);
-        let xScale = yScale / aspect;
-        let zRange = far - near;
-        let zScale = -(far + near) / zRange;
-        let wzScale = -2 * far * near / zRange;
+
+        let yScale = 1 / tan(rad * 0.5)
+        let xScale = yScale / aspect
+        let zRange = far - near
+        let zScale = -(far + near) / zRange
+        let wzScale = -2 * far * near / zRange
 
         return simd_float4x4([
             float4(arrayLiteral: xScale, 0, 0, 0),

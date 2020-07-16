@@ -9,17 +9,17 @@
 import Foundation
 import Metal
 
-class RenderingDevice {
+struct RenderingDevice {
     static var defaultDevice: MTLDevice {
         let dev = RenderingDevice()
         return dev.device
     }
-    
+
     private var device: MTLDevice
-    
+
     private init() {
         guard let device = MTLCreateSystemDefaultDevice() else { fatalError("Couldn't create Metal device!") }
-        
+
         self.device = device
-    }    
+    }
 }

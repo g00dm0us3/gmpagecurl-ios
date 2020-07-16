@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		E514A5A224BF0AD800ED988D /* RenderingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E514A5A124BF0AD800ED988D /* RenderingView.swift */; };
 		E518896C22703D2B00D2541C /* ComputeKernel.metal in Sources */ = {isa = PBXBuildFile; fileRef = E518896B22703D2B00D2541C /* ComputeKernel.metal */; };
+		E541784B24C01DF1000040B8 /* InputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E541784A24C01DF1000040B8 /* InputManager.swift */; };
 		E5A98933226F04BD00A13B34 /* RenderingPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5A98932226F04BD00A13B34 /* RenderingPipeline.swift */; };
 		E5AB192022725A17007521F5 /* MatrixUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5AB191F22725A17007521F5 /* MatrixUtils.swift */; };
 		E5C4CEAD223BA7B70077B654 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C4CEAC223BA7B70077B654 /* AppDelegate.swift */; };
@@ -39,6 +40,7 @@
 /* Begin PBXFileReference section */
 		E514A5A124BF0AD800ED988D /* RenderingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingView.swift; sourceTree = "<group>"; };
 		E518896B22703D2B00D2541C /* ComputeKernel.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ComputeKernel.metal; sourceTree = "<group>"; };
+		E541784A24C01DF1000040B8 /* InputManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputManager.swift; sourceTree = "<group>"; };
 		E5A98932226F04BD00A13B34 /* RenderingPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingPipeline.swift; sourceTree = "<group>"; };
 		E5AB191F22725A17007521F5 /* MatrixUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixUtils.swift; sourceTree = "<group>"; };
 		E5C4CEA9223BA7B70077B654 /* GMPageCurl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GMPageCurl.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -79,6 +81,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E541784924C01DD5000040B8 /* Input Manager */ = {
+			isa = PBXGroup;
+			children = (
+				E541784A24C01DF1000040B8 /* InputManager.swift */,
+			);
+			path = "Input Manager";
+			sourceTree = "<group>";
+		};
 		E5C4CEA0223BA7B70077B654 = {
 			isa = PBXGroup;
 			children = (
@@ -134,6 +144,7 @@
 		E5C75317223D0EFE004D46CA /* Engine */ = {
 			isa = PBXGroup;
 			children = (
+				E541784924C01DD5000040B8 /* Input Manager */,
 				E5C75320223D1B84004D46CA /* Rendering */,
 				E5C75315223D0E3F004D46CA /* Model.swift */,
 				E5C7531C223D13AA004D46CA /* Vertex.swift */,
@@ -261,6 +272,7 @@
 				E5C7531B223D1207004D46CA /* RenderingDevice.swift in Sources */,
 				E5C75322223D1BAE004D46CA /* RenderingViewController.swift in Sources */,
 				E5C75319223D0F15004D46CA /* Renderer.swift in Sources */,
+				E541784B24C01DF1000040B8 /* InputManager.swift in Sources */,
 				E518896C22703D2B00D2541C /* ComputeKernel.metal in Sources */,
 				E5C7531D223D13AA004D46CA /* Vertex.swift in Sources */,
 				E5C75316223D0E3F004D46CA /* Model.swift in Sources */,
