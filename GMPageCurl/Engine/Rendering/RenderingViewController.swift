@@ -33,7 +33,7 @@ class RenderingViewController: UIViewController {
 
         view.addSubview(renderingView)
 
-        renderingView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        renderingView.topAnchor.constraint(equalTo: view.topAnchor, constant: 50).isActive = true
         renderingView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         renderingView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         renderingView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true

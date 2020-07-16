@@ -11,7 +11,7 @@
 #include <simd/simd.h>
 
 #define PI 3.1415926535897
-#define CYLINDER_RADIUS 0.1
+#define CYLINDER_RADIUS 0.2
 
 #define PHI_EPSILON 1e-2
 #define EPSILON 1e-6
@@ -38,20 +38,21 @@ typedef struct {
 typedef struct {
     float xCoord;
     float phi;
+    int state;
 } Input;
 
-float2 flip(float2 v) {
+inline float2 flip(float2 v) {
     return float2(v.x*cos(PI)-v.y*sin(PI), v.x*sin(PI)+v.y*cos(PI));
 }
 
 // rotates clockwise
-float2 rot(float2 point, float angle)
+inline float2 rot(float2 point, float angle)
 {
     matrix_float2x2 mat = matrix_float2x2(float2(cos(angle), sin(angle)), float2(-sin(angle), cos(angle)));
     return mat*point;
 }
 
-bool should_transform(packed_float3 vi, float phi, float xCoord) {
+inline bool should_transform(packed_float3 vi, float phi, float xCoord) {
     if(xCoord > 1) return false;
     
     if(abs(phi) < PHI_EPSILON) {
@@ -74,7 +75,7 @@ bool should_transform(packed_float3 vi, float phi, float xCoord) {
 
 }
 
-float2 calcPointOnDisplacementBorder(float2 pointOnPlane, float phi, float xCoord)
+inline float2 calcPointOnDisplacementBorder(float2 pointOnPlane, float phi, float xCoord)
 {
     if (phi == 0) {
         return float2(xCoord, pointOnPlane.y);
@@ -95,11 +96,11 @@ float2 calcPointOnDisplacementBorder(float2 pointOnPlane, float phi, float xCoor
     return vertical;
 }
 
-float4 calculate_position(packed_float3 position, float phi, float xCoord) {
+inline float4 calculate_position(packed_float3 position, float phi, float xCoord, int viewState) {
     xCoord = 1 - xCoord; // conversion to the Metal coordinate system
     
     bool isOnBorder = should_transform(position, phi, xCoord);
-    bool isWithinRadius = should_transform(position, phi, xCoord - CYLINDER_RADIUS);
+    bool isWithinRadius = should_transform(position, phi, xCoord - CYLINDER_RADIUS) && (viewState == 0);
     
     if (!isOnBorder && !isWithinRadius) {
         return float4(position.x, position.y, position.z, 1);
@@ -160,6 +161,10 @@ float4 calculate_position(packed_float3 position, float phi, float xCoord) {
             pointOnBox = float3(position.xyz);
     }
     
+    if (viewState == 1) { // for demo purposes, do no make it cylindrical
+        return float4(pointOnBox.xyz, 1);
+    }
+    
     float2 reciprocal = CYLINDER_RADIUS*flip(float2(cos(phi), sin(phi)));
     float2 pointOnCylinderTangent = pointOnDisplacementBorder + reciprocal;
     
@@ -194,7 +199,7 @@ vertex VertexOut vertex_function(const device VertexIn *vertices [[buffer(0)]],
     float phi = input.phi;
     float xCoord = input.xCoord;
     
-    float4 pos = calculate_position(vertices[vid].position, phi, xCoord);
+    float4 pos = calculate_position(vertices[vid].position, phi, xCoord, input.state);
 
     out.orig = float3(pos.xyz);
     out.position = uniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
