@@ -29,7 +29,7 @@ final class Renderer {
 
         perspectiveMatrix = MatrixUtils.matrix_perspective(aspect: 1, fovy: 90.0, near: 0.1, far: 100)
     }
-    
+
     func render(in layer: CAMetalLayer) {
 
         fillBuffers()
@@ -92,9 +92,11 @@ final class Renderer {
 
         var displacement = InputManager.defaultManager.displacement
         var phi = InputManager.defaultManager.phi
+        var viewState = InputManager.defaultManager.viewState
 
         memcpy(inputBuifferPointer, &displacement, MemoryLayout<Float>.size)
         memcpy(inputBuifferPointer + MemoryLayout<Float>.size, &phi, MemoryLayout<Float>.size)
+        memcpy(inputBuifferPointer + 2*MemoryLayout<Float>.size, &viewState, MemoryLayout<Int>.size)
     }
 
     private func makeBuffers() {
@@ -110,7 +112,7 @@ final class Renderer {
         }
 
         if inputBuffer == nil {
-            guard let buffer = device.makeBuffer(length: 2*MemoryLayout<Float>.size, options: []) else { fatalError("Couldn't create input buffer") }
+            guard let buffer = device.makeBuffer(length: 2*MemoryLayout<Float>.size+MemoryLayout<Int>.size, options: []) else { fatalError("Couldn't create input buffer") }
 
             inputBuffer = buffer
         }

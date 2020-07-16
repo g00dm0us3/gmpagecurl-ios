@@ -17,34 +17,37 @@ final class InputManager {
 
     var displacement: Float
     var phi: Float
-    
+
+    // 0 - cylinder, 1 - box
+    var viewState: Int = 0
+
     var worldMatrix: simd_float4x4 {
         let translation = MatrixUtils.matrix4x4Translate(t: simd_float3(arrayLiteral: 0, 0, -1.1))
         let scaleMatrix = MatrixUtils.matrix4x4Scale(scale: simd_float3(arrayLiteral: scale, scale, scale))
-        
+
         let rotationMatrixX = MatrixUtils.matrix4x4RotateAroundX(theta: thetaY)
         let rotationMatrixY = MatrixUtils.matrix4x4RotateAroundY(theta: thetaX)
-        
+
         return translation*scaleMatrix*rotationMatrixX*rotationMatrixY
     }
-    
+
     private var scale: Float = 1
     private var lastScale: Float = 1
 
     private var thetaX: Float = 0
     private var thetaY: Float = 0
-    
+
     private var lastThetaX: Float = 0
     private var lastThetaY: Float = 0
-    
+
     public func saveScale() {
         lastScale = scale
     }
-    
+
     public func updateScale(_ scale: Float) {
         self.scale = lastScale*scale
     }
-    
+
     public func saveRotations() {
         lastThetaX = thetaX
         lastThetaY = thetaY
@@ -53,37 +56,37 @@ final class InputManager {
     public func updateRotation(_ translation: CGPoint) {
         let maxX = Float(UIScreen.main.bounds.maxX / 2)
         let maxY = Float(UIScreen.main.bounds.maxY / 2)
-        
+
         let x = Float(translation.x / 2)
         let y = Float(translation.y / 2)
-        
+
         let thetaX = (x/maxX)*2*Float.pi
         let thetaY = (y/maxY)*2*Float.pi
-        
+
         self.thetaX = InputManager.congruentAngle(lastThetaX + thetaX)
         self.thetaY = InputManager.congruentAngle(lastThetaY + thetaY)
     }
-    
+
     private init() {
-        displacement = 0.4
-        phi = InputManager.degree2rad(degree: 42)
+        displacement = 0.5
+        phi = InputManager.degree2rad(degree: 45)
     }
 
-    /// MARK : Static
-    
+    // MARK: Static
+
     /**
      Reduce the number of rations to at most 1
      */
-    @inline(__always) private static func congruentAngle(_ radians:Float) -> Float {
+    @inline(__always) private static func congruentAngle(_ radians: Float) -> Float {
         let numberOfFullRotations = radians / (2*Float.pi)
-        
+
         if (numberOfFullRotations <= 1) {
             return radians
         }
-        
+
         return radians - (numberOfFullRotations-1)*2*Float.pi
     }
-    
+
     private static func degree2rad(degree: Float) -> Float {
         return (degree*Float.pi)/180.0
     }
@@ -91,8 +94,8 @@ final class InputManager {
     private static func rescale(val: Float, ra: Float, rb: Float, na: Float, nb: Float) -> Float {
         return (val-ra)*(nb-na)/(rb-ra)+na
     }
-    
-    /// MARK: Not needed
+
+    // MARK: Not needed
     /*
      var replaying: Bool = false
      var lastTouch: CGPoint = .zero
