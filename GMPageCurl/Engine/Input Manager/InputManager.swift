@@ -9,9 +9,11 @@
 import Foundation
 import simd
 import CoreGraphics
+import UIKit
 
 // - TODO: rotation
 // - TODO: controlls for page turning
+
 final class InputManager {
     static let defaultManager = InputManager()
 
@@ -26,7 +28,7 @@ final class InputManager {
 
     private let screenWidth: Float = 325.0
     private let screenHeight: Float = 667.0
-
+    
     var translation: CGPoint {
         set (newTranslation) {
             let vecX = Float(newTranslation.x - lastTouch.x)
@@ -85,15 +87,48 @@ final class InputManager {
         return displacement
     }
 
-    private(set) var worldMatrix = MatrixUtils.identityMatrix4x4
+    var worldMatrix: simd_float4x4 {
+        let translation = MatrixUtils.matrix4x4Translate(t: simd_float3(arrayLiteral: 0, 0, -1.1))
+        
+        return translation*scaleMatrix*rotationMatrixX*rotationMatrixY
+    }
+    
+    private var scaleMatrix: simd_float4x4
+    private var rotationMatrixX: simd_float4x4
+    private var rotationMatrixY: simd_float4x4
+    
+    
+    public func updateScale(_ scale: Float) {
+        scaleMatrix = MatrixUtils.matrix4x4Scale(scale: simd_float3(arrayLiteral: scale, scale, scale))
+    }
 
+    // from gesture recognizer
+    public func updateRotation(_ translation: CGPoint) {
+        let maxX = Float(UIScreen.main.bounds.maxX / 2)
+        let maxY = Float(UIScreen.main.bounds.maxY / 2)
+        
+        let x = Float(translation.x / 2)
+        let y = Float(translation.y / 2)
+        
+        let thetaX = (x/maxX)*2*Float.pi
+        let thetaY = (y/maxY)*2*Float.pi
+        
+        rotationMatrixY = MatrixUtils.matrix4x4RotateAroundX(theta: thetaX)
+        rotationMatrixX = MatrixUtils.matrix4x4RotateAroundY(theta: thetaY)
+    }
+    
     private init() {
         phi = InputManager.degree2rad(degree: 42)
 
-        worldMatrix = worldMatrix*MatrixUtils.matrix4x4Translate(t: simd_float3(arrayLiteral: 0, 0, -1.1))
-        //worldMatrix = worldMatrix*MatrixUtils.matrix4x4Scale(scale: simd_float3(arrayLiteral: 1, 1, 1))
+        scaleMatrix = MatrixUtils.matrix4x4Scale(scale: simd_float3(arrayLiteral: 1, 1, 1))
+        rotationMatrixX = MatrixUtils.identityMatrix4x4
+        rotationMatrixY = MatrixUtils.identityMatrix4x4
+        
+        //worldMatrix = worldMatrix*MatrixUtils.matrix4x4Translate(t: simd_float3(arrayLiteral: 0, 0, -1.1))
+        //worldMatrix = worldMatrix*
     }
 
+    /// MARK : Static
     private static func degree2rad(degree: Float) -> Float {
         return (degree*Float.pi)/180.0
     }

@@ -41,6 +41,24 @@ struct MatrixUtils {
             float4(arrayLiteral: 0, 0, 0, 1)
         ])
     }
+    
+    static func matrix4x4RotateAroundX(theta: Float) -> simd_float4x4 {
+        return simd_float4x4([
+            float4(arrayLiteral: 1, 0, 0, 0),
+            float4(arrayLiteral: 0, cosf(theta), -sinf(theta), 0),
+            float4(arrayLiteral: 0, sinf(theta), cosf(theta), 0),
+            float4(arrayLiteral: 0, 0, 0, 1)
+        ])
+    }
+    
+    static func matrix4x4RotateAroundY(theta: Float) -> simd_float4x4 {
+        return simd_float4x4([
+            float4(arrayLiteral: cosf(theta), 0, sinf(theta),           0),
+            float4(arrayLiteral: 0,           1, 0,                     0),
+            float4(arrayLiteral: -sinf(theta), 0, cosf(theta), 0),
+            float4(arrayLiteral: 0, 0, 0,                     1)
+        ])
+    }
 
     /// - todo: rotation around origin
 

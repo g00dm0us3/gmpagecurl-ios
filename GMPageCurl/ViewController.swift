@@ -12,13 +12,18 @@ import Metal
 class ViewController: RenderingViewController {
 
     var gestureRecognizer: UIPanGestureRecognizer!
+    var pinchGestureRecognizer: UIPinchGestureRecognizer!
     override func viewDidLoad() {
         super.viewDidLoad()
-        gestureRecognizer = UIPanGestureRecognizer.init(target: self, action: #selector(move))
+        gestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(move))
         gestureRecognizer.minimumNumberOfTouches = 1
         gestureRecognizer.maximumNumberOfTouches = 1
         gestureRecognizer.cancelsTouchesInView = false
         view.addGestureRecognizer(gestureRecognizer)
+        
+        pinchGestureRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(pinch))
+        view.addGestureRecognizer(pinchGestureRecognizer)
+        
     }
 
     override func touchesBegan(_ touches: Set<UITouch>,
@@ -37,11 +42,21 @@ class ViewController: RenderingViewController {
     }
 
     @objc
+    func pinch(gesture: UIPinchGestureRecognizer) {
+        InputManager.defaultManager.updateScale(Float(gesture.scale))
+        print("\(gesture.scale)")
+    }
+    
+    @objc
     func move(gesture: UIPanGestureRecognizer) {
         if(gesture.state == UIGestureRecognizer.State.ended) {
             return
         }
 
-        let translation = gesture.translation(in: view)
+         let translation = gesture.translation(in: view)
+        InputManager.defaultManager.updateRotation(translation)
+        
+       
+        print("\(translation.x), \(translation.y)")
     }
 }

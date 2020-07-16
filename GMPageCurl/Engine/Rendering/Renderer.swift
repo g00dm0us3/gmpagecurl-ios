@@ -29,7 +29,7 @@ final class Renderer {
 
         perspectiveMatrix = MatrixUtils.matrix_perspective(aspect: 1, fovy: 90.0, near: 0.1, far: 100)
     }
-
+    
     func render(in layer: CAMetalLayer) {
 
         fillBuffers()
