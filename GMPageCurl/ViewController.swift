@@ -43,20 +43,21 @@ class ViewController: RenderingViewController {
 
     @objc
     func pinch(gesture: UIPinchGestureRecognizer) {
+        if (gesture.state == UIGestureRecognizer.State.ended) {
+            InputManager.defaultManager.saveScale()
+            return 
+        }
         InputManager.defaultManager.updateScale(Float(gesture.scale))
-        print("\(gesture.scale)")
     }
     
     @objc
     func move(gesture: UIPanGestureRecognizer) {
         if(gesture.state == UIGestureRecognizer.State.ended) {
+            InputManager.defaultManager.saveRotations()
             return
         }
 
-         let translation = gesture.translation(in: view)
+        let translation = gesture.translation(in: view)
         InputManager.defaultManager.updateRotation(translation)
-        
-       
-        print("\(translation.x), \(translation.y)")
     }
 }
