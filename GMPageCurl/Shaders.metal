@@ -191,18 +191,15 @@ inline float4 calculate_position(packed_float3 position, float phi, float xCoord
 
 kernel void compute_positions(texture2d<float> vertices [[texture(0)]],
                               texture2d<float, access::write> transformed [[texture(1)]],
-                              constant Input &input[[buffer(1)]],
+                              constant Input &input[[buffer(0)]],
                               uint2 tid [[thread_position_in_grid]])
 {
     if (tid.x >= vertices.get_width() || tid.y >= vertices.get_height()) {
         return;
     }
-    constexpr sampler sam(min_filter::nearest, mag_filter::nearest, mip_filter::none,
-    address::clamp_to_edge, coord::pixel);
-    
-    float2 tidFloat = float2(tid.xy);
-    
-    float3 position = float3(vertices.sample(sam, tidFloat).rgb);
+
+    float4 r = vertices.read(tid.xy);
+    float3 position = float3(r.x,r.y,r.z);
     
     transformed.write(float4(position.xyz, 1), tid);
 }

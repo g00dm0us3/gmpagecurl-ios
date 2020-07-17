@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import simd
 
 struct Vertex {
 
@@ -17,7 +18,7 @@ struct Vertex {
         return [x, y, z, r, g, b, a]
     }
     
-    func floatBufferForKernel() -> [Float] {
-        return [x, 0, z, 1]
+    func floatBufferForKernel() -> [Float32] {
+        return [abs(x),0,0,1]
     }
 }

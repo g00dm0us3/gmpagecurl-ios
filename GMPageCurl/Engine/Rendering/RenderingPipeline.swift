@@ -56,7 +56,8 @@ final class RenderingPipeline {
     {
         let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: pixelFormat, width: width, height: height, mipmapped: false)
         
-        textureDescriptor.usage = [.shaderRead]
+        textureDescriptor.usage = [.unknown]
+        textureDescriptor.storageMode = .shared
         
         guard let texture = device.makeTexture(descriptor: textureDescriptor) else { fatalError("Couldn't create texture")}
         
