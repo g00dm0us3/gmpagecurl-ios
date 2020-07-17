@@ -16,4 +16,8 @@ struct Vertex {
     func floatBuffer() -> [Float] {
         return [x, y, z, r, g, b, a]
     }
+    
+    func floatBufferForKernel() -> [Float] {
+        return [x, 0, z, 1]
+    }
 }

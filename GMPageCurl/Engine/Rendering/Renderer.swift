@@ -36,6 +36,38 @@ final class Renderer {
 
         let commandBuffer = renderingPipeline.getCommandBuffer()
 
+        let computePositionsPassEncoder = commandBuffer.makeComputeCommandEncoder()!
+        
+        computePositionsPassEncoder.pushDebugGroup("COMPUTE POSITIONS")
+        let computePositionsPipelineState = renderingPipeline.createKernelPipelineState("compute_positions")
+        
+        let inputTexture = renderingPipeline.makeInputComputeTexture(pixelFormat: .rgba16Float, width: model.columns, height: model.rows)
+        // fill input texture
+        
+        var kernelData = model.serializedVertexDataForCompute
+        
+        inputTexture.replace(region: MTLRegionMake2D(0, 0, model.columns, model.rows), mipmapLevel: 0, withBytes: kernelData, bytesPerRow: model.columns*16*4)
+        
+        let outputTexture = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba16Float, width: model.columns, height: model.rows)
+        
+        computePositionsPassEncoder.setComputePipelineState(computePositionsPipelineState)
+        computePositionsPassEncoder.setTexture(inputTexture, index: 0)
+        computePositionsPassEncoder.setTexture(outputTexture, index: 1)
+
+        let w = computePositionsPipelineState.threadExecutionWidth
+        let h = computePositionsPipelineState.maxTotalThreadsPerThreadgroup / w
+        let threadsPerThreadgroup = MTLSize(width: w, height: h, depth: 1)
+        
+        let threadgroupsPerGrid = MTLSize(width: (model.columns + w - 1) / w,
+                                                  height: (model.rows + h - 1) / h,
+                                                  depth: 1)
+        
+        computePositionsPassEncoder.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
+        
+        computePositionsPassEncoder.endEncoding()
+        computePositionsPassEncoder.popDebugGroup()
+        
+
         let drawable = self.drawable(from: layer)
         let primitiveType = MTLPrimitiveType.line
 

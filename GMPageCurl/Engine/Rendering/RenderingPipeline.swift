@@ -38,6 +38,41 @@ final class RenderingPipeline {
 
         return renderPassDscriptor
     }
+    
+    public func createKernelPipelineState(_ kernelFunctionName: String) -> MTLComputePipelineState {
+        let pipelineStateDescriptor = MTLComputePipelineDescriptor()
+        
+        pipelineStateDescriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = true
+        pipelineStateDescriptor.computeFunction = self.defaultLibrary.makeFunction(name: kernelFunctionName)
+        
+        do {
+            return try device.makeComputePipelineState(descriptor: pipelineStateDescriptor, options: MTLPipelineOption(rawValue: 0), reflection: nil)
+        } catch {
+            fatalError("Cannot create kernel function")
+        }
+    }
+    
+    public func makeInputComputeTexture(pixelFormat: MTLPixelFormat, width: Int, height: Int) -> MTLTexture
+    {
+        let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: pixelFormat, width: width, height: height, mipmapped: false)
+        
+        textureDescriptor.usage = [.shaderRead]
+        
+        guard let texture = device.makeTexture(descriptor: textureDescriptor) else { fatalError("Couldn't create texture")}
+        
+        return texture
+    }
+    
+    public func makeOutputComputeTexture(pixelFormat: MTLPixelFormat, width: Int, height: Int) -> MTLTexture
+    {
+        let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: pixelFormat, width: width, height: height, mipmapped: false)
+        
+        textureDescriptor.usage = [.shaderRead, .shaderWrite]
+        
+        guard let texture = device.makeTexture(descriptor: textureDescriptor) else { fatalError("Couldn't create texture")}
+        
+        return texture
+    }
 
     private func initColorPipelineState() throws -> MTLRenderPipelineState {
         let vertexProgram = defaultLibrary.makeFunction(name: "vertex_function")
@@ -52,5 +87,7 @@ final class RenderingPipeline {
 
         return try device.makeRenderPipelineState(descriptor: pipelineStateDescriptor)
     }
+    
+    
 
 }

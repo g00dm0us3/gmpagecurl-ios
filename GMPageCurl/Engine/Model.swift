@@ -13,14 +13,23 @@ import CoreGraphics
 
 final class Model {
 
-    private let rows = 20
-    private let columns = 23
+    let rows = 20
+    let columns = 23
 
     lazy var serializedVertexData: [Float] = {
         var vd = [Float]()
 
         for vertex in vertexData {
             vd.append(contentsOf: vertex.floatBuffer())
+        }
+        return vd
+    }()
+    
+    lazy var serializedVertexDataForCompute: [Float] = {
+        var vd = [Float]()
+
+        for vertex in vertexData {
+            vd.append(contentsOf: vertex.floatBufferForKernel())
         }
         return vd
     }()
