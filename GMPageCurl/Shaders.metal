@@ -220,6 +220,7 @@ kernel void compute_normals(const texture2d<float> vertices [[texture(0)]],
     if (tid.x >= vertices.get_width() || tid.y >= vertices.get_height()) {
         return;
     }
+    
     float3 point = float3(vertices.read(tid));
     
     float3 top;
@@ -237,7 +238,7 @@ kernel void compute_normals(const texture2d<float> vertices [[texture(0)]],
     if (tid.x+1 < vertices.get_width()) {
         right = vertices.read(uint2(tid.x + 1, tid.y)).xyz;
     } else {
-         right = vertices.read(uint2(tid.x - 1, tid.y)).xyz;
+        right = vertices.read(uint2(tid.x - 1, tid.y)).xyz;
         swap ^= 1;
     }
     
@@ -251,17 +252,16 @@ kernel void compute_normals(const texture2d<float> vertices [[texture(0)]],
         n = cross(v1, v2);
     }
     
+    n = normalize(n);
+    
+    // FOR DEBUG
+    //float dotProduct = dot(normalize(float3(1,0,0)), n);
+    //float angleCos = max((float)dotProduct, (float)-1.0);
+    //angleCos = min(angleCos, (float)1.0);
     
     
-    float3 normed = normalize(n);
-    n += point;
-    
-    float dotProduct = dot(float3(1,0,0)+point, normed);
-    float angleCos = max((float)dotProduct, (float)-1.0);
-    angleCos = min(angleCos, (float)1.0);
-    
-    
-    normals.write(float4(angleCos, 0, point.z, 180*acos(angleCos)/PI), tid);
+    //normals.write(float4(angleCos, 0, 0, 180*acos(angleCos)/PI), tid);
+    normals.write(float4(n, 1), tid);
 }
 
 vertex VertexOut vertex_function(texture2d<float> tex_vertices [[texture(0)]],

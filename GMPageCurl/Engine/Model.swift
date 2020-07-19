@@ -13,8 +13,8 @@ import CoreGraphics
 
 final class Model {
 
-    let rows = 20
-    let columns = 20
+    let rows = 50
+    let columns = 50
 
     lazy var serializedVertexData: [Float] = {
         var vd = [Float]()
