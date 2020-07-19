@@ -3,6 +3,7 @@ A page curl effect for iOS using Metal. The main idea - cylinder rolls on a shee
 
 ## Demo application available in dev. branch.
 Use pinch gesture to zoom in and out. Use "View State" button to switch between cylindrical and box views (the idea is to smooth box over the cylinder).
+![Alt text](/demo_app.png?raw=true "Demo App Screenshot")
 
 ## TODO
 - 𝛗 and displacement input.
