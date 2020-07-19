@@ -16,6 +16,7 @@ final class Renderer {
     private var vertexBuffer: MTLBuffer?
     private var uniformBuffer: MTLBuffer?
     private var inputBuffer: MTLBuffer?
+    private var vertexIndexBuffer: MTLBuffer?
 
     private var currentDrawable: CAMetalDrawable?
     private var renderingPipeline: RenderingPipeline
@@ -23,6 +24,7 @@ final class Renderer {
 
     private(set) var perspectiveMatrix: simd_float4x4
     private let inputTexture:MTLTexture
+    private let computedNormals: MTLTexture
 
     init() {
         model = Model()
@@ -34,6 +36,8 @@ final class Renderer {
         var kernelData = model.serializedVertexDataForCompute
         
         inputTexture.replace(region: MTLRegionMake2D(0, 0, model.columns, model.rows), mipmapLevel: 0, withBytes: &kernelData, bytesPerRow: 4*MemoryLayout<Float32>.size*model.columns)
+        
+        computedNormals = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
     }
 
     func render(in layer: CAMetalLayer) {
@@ -64,6 +68,13 @@ final class Renderer {
         
         computePositionsPassEncoder.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
         
+        let computeNormalsPipelineState = renderingPipeline.createKernelPipelineState("compute_normals")
+        computePositionsPassEncoder.setComputePipelineState(computeNormalsPipelineState)
+        computePositionsPassEncoder.setTexture(outputTexture, index: 0)
+        computePositionsPassEncoder.setTexture(computedNormals, index: 1)
+        
+        computePositionsPassEncoder.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
+        
         computePositionsPassEncoder.endEncoding()
         computePositionsPassEncoder.popDebugGroup()
         
@@ -87,8 +98,11 @@ final class Renderer {
         renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
         renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 1)
         renderEncoder.setVertexBuffer(inputBuffer, offset: 0, index: 2)
+        renderEncoder.setVertexBuffer(vertexIndexBuffer, offset: 0, index: 3)
+        
+        renderEncoder.setVertexTexture(computedNormals, index: 0)
 
-        renderEncoder.drawPrimitives(type: .line, vertexStart: 0, vertexCount: model.vertexData.count, instanceCount: 1)
+        renderEncoder.drawPrimitives(type: .line, vertexStart: 0, vertexCount: model.vertexIndicies.count/2)
         renderEncoder.popDebugGroup()
         renderEncoder.endEncoding()
 
@@ -155,6 +169,15 @@ final class Renderer {
 
             guard let buffer = device.makeBuffer(bytes: vertexData, length: dataSize, options: []) else { fatalError("Couldn't create vertex buffer") }
             vertexBuffer = buffer
+        }
+        
+        if vertexIndexBuffer == nil {
+            let vertexIndicies = model.vertexIndicies
+            let dataSize = vertexIndicies.count * MemoryLayout<Int32>.size
+            
+            guard let buffer = device.makeBuffer(bytes: vertexIndicies, length: dataSize, options: []) else { fatalError("Couldn't create vertex index buffer") }
+            
+            vertexIndexBuffer = buffer
         }
     }
 }

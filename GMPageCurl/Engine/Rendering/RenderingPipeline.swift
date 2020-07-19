@@ -75,7 +75,7 @@ final class RenderingPipeline {
         
         return texture
     }
-
+    
     private func initColorPipelineState() throws -> MTLRenderPipelineState {
         let vertexProgram = defaultLibrary.makeFunction(name: "vertex_function")
         let fragmentProgram = defaultLibrary.makeFunction(name: "fragment_function")

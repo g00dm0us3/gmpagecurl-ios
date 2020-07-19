@@ -68,8 +68,8 @@ final class InputManager {
     }
 
     private init() {
-        displacement = 0.0
-        phi = InputManager.degree2rad(degree: 0)
+        displacement = 0.5
+        phi = InputManager.degree2rad(degree:45)
     }
 
     // MARK: Static

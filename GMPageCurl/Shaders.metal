@@ -24,10 +24,16 @@ typedef struct
     packed_float4 color;
 } VertexIn;
 
+typedef struct
+{
+    int2 tex_coords;
+} VertexIndex;
+
 typedef struct {
     float4 position [[position]];
     float3 orig; // used for debugging (position, w/o multiplication by model and perspective matrices)
     half4  color;
+    float point_size [[point_size]];
 } VertexOut;
 
 typedef struct {
@@ -200,26 +206,53 @@ kernel void compute_positions(const texture2d<float> vertices [[texture(0)]],
     }
 
     float4 r = vertices.read(tid.xy);
-    float3 position = float3(r.x,r.y,r.z);
+    float3 position = packed_float3(r.x,r.y,r.z);
     
-    transformed.write(float4(position.xyz, 1), tid);
+    float4 pos = calculate_position(position, input.phi, input.xCoord, input.state);
+    
+    transformed.write(float4(pos.xyz, 1), tid);
+}
+
+kernel void compute_normals(const texture2d<float> vertices [[texture(0)]],
+                            const texture2d<float, access::write> vertex_input [[texture(1)]],
+                            uint2 tid [[thread_position_in_grid]])
+{
+    if (tid.x >= vertices.get_width() || tid.y >= vertices.get_height()) {
+        return;
+    }
+    
+    vertex_input.write(vertices.read(tid), tid);
 }
 
 vertex VertexOut vertex_function(const device VertexIn *vertices [[buffer(0)]],
+                                 texture2d<float> tex_vertices [[texture(0)]],
                                  constant Uniforms &uniforms [[buffer(1)]],
                                  constant Input &input[[buffer(2)]],
+                                 constant VertexIndex *tex_indicies [[buffer(3)]],
                                  uint vid [[vertex_id]])
 {
     VertexOut out;
     
-    float phi = input.phi;
-    float xCoord = input.xCoord;
+    /*float phi = input.phi;
+    float xCoord = input.xCoord;*/
     
-    float4 pos = calculate_position(vertices[vid].position, phi, xCoord, input.state);
+    uint2 tex_coord = uint2(tex_indicies[vid].tex_coords.xy);
+    float3 position = packed_float3(tex_vertices.read(tex_coord).xyz);
+    
+    /*if (tex_coord.x > 19 || tex_coord.y > 19 || tex_coord.x < 0 || tex_coord.y < 0) {
+        return out;
+    }*/
+    
+    /*if (position.x == 0 && position.y == 0) {
+        return out;
+    }*/
+    
+    float4 pos = float4(position.xyz, 1);
 
+    out.point_size = 2;
     out.orig = float3(pos.xyz);
     out.position = uniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
-    out.color = half4(vertices[vid].color);
+    out.color = half4(0,0,1,1);
     
     return out;
 }
