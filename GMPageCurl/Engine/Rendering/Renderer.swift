@@ -95,12 +95,11 @@ final class Renderer {
 
         renderEncoder.setRenderPipelineState(renderingPipeline.colorPipelineState!)
 
-        renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
-        renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 1)
-        renderEncoder.setVertexBuffer(inputBuffer, offset: 0, index: 2)
-        renderEncoder.setVertexBuffer(vertexIndexBuffer, offset: 0, index: 3)
+        renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 0)
+        renderEncoder.setVertexBuffer(vertexIndexBuffer, offset: 0, index: 1)
         
-        renderEncoder.setVertexTexture(computedNormals, index: 0)
+        renderEncoder.setVertexTexture(outputTexture, index: 0)
+        renderEncoder.setVertexTexture(computedNormals, index: 1) // computed vertices / normals
 
         renderEncoder.drawPrimitives(type: .line, vertexStart: 0, vertexCount: model.vertexIndicies.count/2)
         renderEncoder.popDebugGroup()
