@@ -97,6 +97,7 @@ inline float2 calcPointOnDisplacementBorder(float2 pointOnPlane, float phi, floa
 }
 
 inline float4 calculate_position(packed_float3 position, float phi, float xCoord, int viewState) {
+    if (xCoord == 0) { return float4(position.xyz,1); }
     xCoord = 1 - xCoord; // conversion to the Metal coordinate system
     
     bool isOnBorder = should_transform(position, phi, xCoord);
@@ -189,7 +190,7 @@ inline float4 calculate_position(packed_float3 position, float phi, float xCoord
     return float4(axisToBox.xyz, 1);
 }
 
-kernel void compute_positions(texture2d<float> vertices [[texture(0)]],
+kernel void compute_positions(const texture2d<float> vertices [[texture(0)]],
                               texture2d<float, access::write> transformed [[texture(1)]],
                               constant Input &input[[buffer(0)]],
                               uint2 tid [[thread_position_in_grid]])

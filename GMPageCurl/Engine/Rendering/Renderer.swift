@@ -22,12 +22,18 @@ final class Renderer {
     private var model: Model
 
     private(set) var perspectiveMatrix: simd_float4x4
+    private let inputTexture:MTLTexture
 
     init() {
         model = Model()
         renderingPipeline = RenderingPipeline()
 
         perspectiveMatrix = MatrixUtils.matrix_perspective(aspect: 1, fovy: 90.0, near: 0.1, far: 100)
+        inputTexture = renderingPipeline.makeInputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
+        
+        var kernelData = model.serializedVertexDataForCompute
+        
+        inputTexture.replace(region: MTLRegionMake2D(0, 0, model.columns, model.rows), mipmapLevel: 0, withBytes: &kernelData, bytesPerRow: 4*MemoryLayout<Float32>.size*model.columns)
     }
 
     func render(in layer: CAMetalLayer) {
@@ -40,18 +46,7 @@ final class Renderer {
         
         computePositionsPassEncoder.pushDebugGroup("COMPUTE POSITIONS")
         let computePositionsPipelineState = renderingPipeline.createKernelPipelineState("compute_positions")
-        
-        let inputTexture = renderingPipeline.makeInputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
-        // fill input texture
-        
-        var kernelData = model.serializedVertexDataForCompute
-        
-        inputTexture.replace(region: MTLRegionMake2D(0, 0, model.columns, model.rows), mipmapLevel: 0, withBytes: &kernelData, bytesPerRow: model.columns*32*4)
-        
-        var texData = Array(repeating: Float(0), count: kernelData.count)
-        
-        
-        
+
         let outputTexture = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
         
         computePositionsPassEncoder.setComputePipelineState(computePositionsPipelineState)
@@ -71,6 +66,7 @@ final class Renderer {
         
         computePositionsPassEncoder.endEncoding()
         computePositionsPassEncoder.popDebugGroup()
+        
 
         let drawable = self.drawable(from: layer)
         let primitiveType = MTLPrimitiveType.line
@@ -92,8 +88,7 @@ final class Renderer {
         renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 1)
         renderEncoder.setVertexBuffer(inputBuffer, offset: 0, index: 2)
 
-        //set vertex buffer for matrix
-        renderEncoder.drawPrimitives(type: primitiveType, vertexStart: 0, vertexCount: model.vertexData.count)
+        renderEncoder.drawPrimitives(type: .line, vertexStart: 0, vertexCount: model.vertexData.count, instanceCount: 1)
         renderEncoder.popDebugGroup()
         renderEncoder.endEncoding()
 

@@ -19,6 +19,6 @@ struct Vertex {
     }
     
     func floatBufferForKernel() -> [Float32] {
-        return [abs(x),0,0,1]
+        return [0.9,0.0,0.0,1.0]
     }
 }

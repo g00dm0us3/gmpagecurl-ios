@@ -25,12 +25,22 @@ final class Model {
         return vd
     }()
     
-    lazy var serializedVertexDataForCompute: [Float] = {
-        var vd = [Float]()
+    lazy var serializedVertexDataForCompute: [Float32] = {
+        var vd = [Float32]()
+        var res: [Vertex] = []
 
-        for vertex in vertexData {
-            vd.append(contentsOf: vertex.floatBufferForKernel())
+        let stepX: Float = Float(2.0 / Float(columns))
+        let stepY: Float = Float(2.0 / Float(rows))
+
+        var i = 0
+        var grid2D: [[Vertex?]] = Array(repeating: Array(repeating: nil, count: columns+1), count: rows+1)
+        for iiY in 0..<rows {
+            for iiX in 0..<columns {
+                grid2D[iiY][iiX] = Vertex(x: -1+Float(iiX)*stepX, y: -1+Float(iiY)*stepY, z: 0, r: 0, g: 0, b: 0, a: 0)
+                vd.append(contentsOf: [grid2D[iiY][iiX]!.x,grid2D[iiY][iiX]!.y,grid2D[iiY][iiX]!.z,1])
+            }
         }
+
         return vd
     }()
 
