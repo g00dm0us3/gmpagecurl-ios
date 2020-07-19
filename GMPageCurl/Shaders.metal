@@ -24,10 +24,16 @@ typedef struct
     packed_float4 color;
 } VertexIn;
 
+typedef struct
+{
+    int2 tex_coords;
+} VertexIndex;
+
 typedef struct {
     float4 position [[position]];
     float3 orig; // used for debugging (position, w/o multiplication by model and perspective matrices)
     half4  color;
+    float point_size [[point_size]];
 } VertexOut;
 
 typedef struct {
@@ -97,6 +103,7 @@ inline float2 calcPointOnDisplacementBorder(float2 pointOnPlane, float phi, floa
 }
 
 inline float4 calculate_position(packed_float3 position, float phi, float xCoord, int viewState) {
+    if (xCoord == 0) { return float4(position.xyz,1); }
     xCoord = 1 - xCoord; // conversion to the Metal coordinate system
     
     bool isOnBorder = should_transform(position, phi, xCoord);
@@ -189,21 +196,91 @@ inline float4 calculate_position(packed_float3 position, float phi, float xCoord
     return float4(axisToBox.xyz, 1);
 }
 
-vertex VertexOut vertex_function(const device VertexIn *vertices [[buffer(0)]],
-                                 constant Uniforms &uniforms [[buffer(1)]],
-                                 constant Input &input[[buffer(2)]],
+kernel void compute_positions(const texture2d<float> vertices [[texture(0)]],
+                              texture2d<float, access::write> transformed [[texture(1)]],
+                              constant Input &input[[buffer(0)]],
+                              uint2 tid [[thread_position_in_grid]])
+{
+    if (tid.x >= vertices.get_width() || tid.y >= vertices.get_height()) {
+        return;
+    }
+
+    float4 input_vertex = vertices.read(tid.xy); // - todo: this doesn't change, no need to pass it from anywhere
+    float3 position = packed_float3(input_vertex.x, input_vertex.y, input_vertex.z);
+    
+    float4 pos = calculate_position(position, input.phi, input.xCoord, input.state);
+    
+    transformed.write(float4(pos.xyz, 1), tid);
+}
+
+kernel void compute_normals(const texture2d<float> vertices [[texture(0)]],
+                            const texture2d<float, access::write> normals[[texture(1)]],
+                            uint2 tid [[thread_position_in_grid]])
+{
+    if (tid.x >= vertices.get_width() || tid.y >= vertices.get_height()) {
+        return;
+    }
+    
+    float3 point = float3(vertices.read(tid));
+    
+    float3 top;
+    float3 right;
+    
+    int swap = 0;
+    
+    if (tid.y+1 < vertices.get_height()) {
+        top = vertices.read(uint2(tid.x, tid.y+1)).xyz;
+    } else {
+        top = vertices.read(uint2(tid.x, tid.y-1)).xyz;
+        swap ^= 1;
+    }
+    
+    if (tid.x+1 < vertices.get_width()) {
+        right = vertices.read(uint2(tid.x + 1, tid.y)).xyz;
+    } else {
+        right = vertices.read(uint2(tid.x - 1, tid.y)).xyz;
+        swap ^= 1;
+    }
+    
+    float3 v1 = right - point;
+    float3 v2 = top - point;
+    
+    float3 n;
+    if (swap == 0) {
+        n = cross(v2, v1);
+    } else {
+        n = cross(v1, v2);
+    }
+    
+    n = normalize(n);
+    
+    // FOR DEBUG
+    //float dotProduct = dot(normalize(float3(1,0,0)), n);
+    //float angleCos = max((float)dotProduct, (float)-1.0);
+    //angleCos = min(angleCos, (float)1.0);
+    
+    
+    //normals.write(float4(angleCos, 0, 0, 180*acos(angleCos)/PI), tid);
+    normals.write(float4(n, 1), tid);
+}
+
+vertex VertexOut vertex_function(texture2d<float> tex_vertices [[texture(0)]],
+                                 texture2d<float> tex_normals [[texture(1)]],
+                                 constant Uniforms &uniforms [[buffer(0)]],
+                                 constant VertexIndex *tex_indicies [[buffer(1)]],
                                  uint vid [[vertex_id]])
 {
     VertexOut out;
-    
-    float phi = input.phi;
-    float xCoord = input.xCoord;
-    
-    float4 pos = calculate_position(vertices[vid].position, phi, xCoord, input.state);
 
+    uint2 tex_coord = uint2(tex_indicies[vid].tex_coords.xy);
+    float3 position = packed_float3(tex_vertices.read(tex_coord).xyz);
+
+    float4 pos = float4(position.xyz, 1);
+
+    out.point_size = 2;
     out.orig = float3(pos.xyz);
     out.position = uniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
-    out.color = half4(vertices[vid].color);
+    out.color = half4(0,0,1,1);
     
     return out;
 }
