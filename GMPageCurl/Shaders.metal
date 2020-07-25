@@ -232,7 +232,7 @@ kernel void compute_normals(const texture2d<float> vertices [[texture(0)]],
     float3 top;
     float3 right;
     
-    int swap = 0;
+    int swap = 1;
     
     if (tid.y+1 < vertices.get_height()) {
         top = vertices.read(uint2(tid.x, tid.y+1)).xyz;
@@ -296,21 +296,43 @@ vertex VertexOut vertex_function(texture2d<float> tex_vertices [[texture(0)]],
 
 float calculate_shadow(float4 fragment_in_light_space, depth2d<float> depth) {
     constexpr sampler texSampler(coord::normalized, filter::linear, address::clamp_to_edge, compare_func::less);
-    float2 xy = fragment_in_light_space.xy / fragment_in_light_space.w;
+    float3 xyz = fragment_in_light_space.xyz / fragment_in_light_space.w;
+    float2 xy = xyz.xy;
     xy = xy* 0.5 + 0.5;
     xy.y = 1 - xy.y;
     
     float val = depth.sample(texSampler, xy);
     
-    return val;
+    float b = 0.007;
+    float shadow = xyz.z-b > val ? 1.0 : 0.0;
+    
+    return shadow;
 }
 
 // make this color / light shader
 fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> depth [[texture(0)]])
 {
+    float3 normal = normalize(in.normal);
+    float3 light_color = float3(1,1,1);
+    float3 ambient = 0.15*light_color;
+    
+    float3 light_pos = float3(-2,2,2);
+    float3 view_pos = float3(1,0,2);
+    
+    float3 light_direction = normalize(light_pos);
+    float diff = max(dot(light_direction, normal), (float)0);
+    float3 diffuse = diff*light_color;
+    
+    float3 view_direction = normalize(view_pos - in.fragment_in_model_space);
+    float spec = 0;
+    float3 halfway_dir = normalize(light_direction);//+view_direction);
+    spec = pow(max(dot(normal, halfway_dir), 0.0), 64.0);
+    float3 specular = spec * light_color;
     float val = calculate_shadow(in.fragment_in_light_space, depth);
     
-    return float4(val,0,0,1);
+    float3 lighting = (ambient + (1-val) * (diffuse + specular)) * float3(1,0,0);
+    
+    return float4(lighting.xyz, 1);
     //return in.color;
 }
 
