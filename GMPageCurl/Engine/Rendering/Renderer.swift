@@ -12,6 +12,8 @@ import Metal
 import simd
 import CoreGraphics
 
+// - TODO: cleanup code.
+
 final class Renderer {
     private var vertexBuffer: MTLBuffer?
     private var uniformBuffer: MTLBuffer?
@@ -24,7 +26,7 @@ final class Renderer {
 
     private(set) var perspectiveMatrix: simd_float4x4
     private let inputTexture:MTLTexture
-    private let outputTexture:MTLTexture // positions textures
+    private let computedPositions:MTLTexture // positions textures
     private let computedNormals: MTLTexture
     private var depthTexture: MTLTexture!
 
@@ -40,11 +42,10 @@ final class Renderer {
         inputTexture.replace(region: MTLRegionMake2D(0, 0, model.columns, model.rows), mipmapLevel: 0, withBytes: &kernelData, bytesPerRow: 4*MemoryLayout<Float32>.size*model.columns)
         
         computedNormals = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
-        outputTexture = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
+        computedPositions = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
     }
 
     func render(in layer: CAMetalLayer) {
-
         fillBuffers()
 
         let commandBuffer = renderingPipeline.getCommandBuffer()
@@ -67,7 +68,7 @@ final class Renderer {
 
         computePositionsPassEncoder.setComputePipelineState(computePositionsPipelineState)
         computePositionsPassEncoder.setTexture(inputTexture, index: 0)
-        computePositionsPassEncoder.setTexture(outputTexture, index: 1)
+        computePositionsPassEncoder.setTexture(computedPositions, index: 1)
         computePositionsPassEncoder.setBuffer(inputBuffer, offset: 0, index: 0)
 
         let w = computePositionsPipelineState.threadExecutionWidth
@@ -82,7 +83,7 @@ final class Renderer {
         
         let computeNormalsPipelineState = renderingPipeline.createKernelPipelineState("compute_normals")
         computePositionsPassEncoder.setComputePipelineState(computeNormalsPipelineState)
-        computePositionsPassEncoder.setTexture(outputTexture, index: 0)
+        computePositionsPassEncoder.setTexture(computedPositions, index: 0)
         computePositionsPassEncoder.setTexture(computedNormals, index: 1)
         
         computePositionsPassEncoder.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
@@ -129,7 +130,7 @@ final class Renderer {
         renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 0)
         renderEncoder.setVertexBuffer(vertexIndexBuffer, offset: 0, index: 1)
         
-        renderEncoder.setVertexTexture(outputTexture, index: 0)
+        renderEncoder.setVertexTexture(computedPositions, index: 0)
         renderEncoder.setVertexTexture(computedNormals, index: 1) // computed vertices / normals
 
         renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: model.vertexIndicies.count/2)
@@ -152,7 +153,7 @@ final class Renderer {
         renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 0)
         renderEncoder.setVertexBuffer(vertexIndexBuffer, offset: 0, index: 1)
         
-        renderEncoder.setVertexTexture(outputTexture, index: 0)
+        renderEncoder.setVertexTexture(computedPositions, index: 0)
         renderEncoder.setVertexTexture(computedNormals, index: 1) // computed vertices / normals
         
         renderEncoder.setFragmentTexture(depthTexture, index: 0)
