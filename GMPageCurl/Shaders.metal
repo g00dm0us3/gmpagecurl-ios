@@ -32,7 +32,8 @@ typedef struct
 typedef struct {
     float4 position [[position]];
     float3 orig; // used for debugging (position, w/o multiplication by model and perspective matrices)
-    half4  color;
+    float4  color;
+    float4 texture_coordinate;
     float point_size [[point_size]];
 } VertexOut;
 
@@ -47,6 +48,7 @@ typedef struct {
     int state;
 } Input;
 
+// - todo: that's around origin
 inline float2 flip(float2 v) {
     return float2(v.x*cos(PI)-v.y*sin(PI), v.x*sin(PI)+v.y*cos(PI));
 }
@@ -54,7 +56,8 @@ inline float2 flip(float2 v) {
 // rotates clockwise
 inline float2 rot(float2 point, float angle)
 {
-    matrix_float2x2 mat = matrix_float2x2(float2(cos(angle), sin(angle)), float2(-sin(angle), cos(angle)));
+    matrix_float2x2 mat = matrix_float2x2(float2(cos(angle), sin(angle)),
+                                          float2(-sin(angle), cos(angle)));
     return mat*point;
 }
 
@@ -168,7 +171,7 @@ inline float4 calculate_position(packed_float3 position, float phi, float xCoord
             pointOnBox = float3(position.xyz);
     }
     
-    if (viewState == 1) { // for demo purposes, do no make it cylindrical
+    if (viewState == 1) { // for demo purposes, do not make it cylindrical
         return float4(pointOnBox.xyz, 1);
     }
     
@@ -277,15 +280,39 @@ vertex VertexOut vertex_function(texture2d<float> tex_vertices [[texture(0)]],
 
     float4 pos = float4(position.xyz, 1);
 
+    
     out.point_size = 2;
-    out.orig = float3(pos.xyz);
+    out.orig = float3((uniforms.modelMatrix*pos).xyz);
     out.position = uniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
-    out.color = half4(0,0,1,1);
+    out.texture_coordinate = uniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
+    out.color = float4(0,0,1,1);
     
     return out;
 }
 
-fragment float4 fragment_function(VertexOut in [[stage_in]])
+// make this color / light shader
+fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> depth [[texture(0)]])
 {
-    return float4(in.color);
+    constexpr sampler texSampler(coord::normalized, filter::linear, address::clamp_to_edge, compare_func::less);
+    float2 xy = in.texture_coordinate.xy / in.texture_coordinate.w;
+    xy = xy* 0.5 + 0.5;
+    xy.y = 1 - xy.y;
+    
+    float val = depth.sample(texSampler, xy);
+    return float4(val,0,0,1);
+    //return in.color;
+}
+
+vertex float4 vertex_pos_only(texture2d<float> tex_vertices [[texture(0)]],
+                                 texture2d<float> tex_normals [[texture(1)]],
+                                 constant Uniforms &uniforms [[buffer(0)]],
+                                 constant VertexIndex *tex_indicies [[buffer(1)]],
+                                 uint vid [[vertex_id]])
+{
+    uint2 tex_coord = uint2(tex_indicies[vid].tex_coords.xy);
+    float3 position = packed_float3(tex_vertices.read(tex_coord).xyz);
+
+    float4 pos = float4(position.xyz, 1);
+
+    return uniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
 }

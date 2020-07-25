@@ -84,8 +84,21 @@ final class RenderingPipeline {
         pipelineStateDescriptor.vertexFunction = vertexProgram
         pipelineStateDescriptor.fragmentFunction = fragmentProgram
 
-        pipelineStateDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.bgra8Unorm
         pipelineStateDescriptor.depthAttachmentPixelFormat = .invalid
+        pipelineStateDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.bgra8Unorm
+
+        return try device.makeRenderPipelineState(descriptor: pipelineStateDescriptor)
+    }
+    
+    func makeShadowPipelineState() throws -> MTLRenderPipelineState {
+        let vertexProgram = defaultLibrary.makeFunction(name: "vertex_pos_only")
+
+        let pipelineStateDescriptor = MTLRenderPipelineDescriptor()
+        pipelineStateDescriptor.vertexFunction = vertexProgram
+        pipelineStateDescriptor.fragmentFunction = nil
+
+        pipelineStateDescriptor.depthAttachmentPixelFormat = .depth32Float
+        pipelineStateDescriptor.colorAttachments[0].pixelFormat = .invalid
 
         return try device.makeRenderPipelineState(descriptor: pipelineStateDescriptor)
     }

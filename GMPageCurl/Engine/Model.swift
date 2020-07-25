@@ -104,7 +104,7 @@ final class Model {
                     //idxArr.append(contentsOf: tupleToArray(tuple: dIdx))
                                     
                     
-                    idxArr.append(contentsOf: tupleToArray(tuple: aIdx))
+                    /*idxArr.append(contentsOf: tupleToArray(tuple: aIdx))
                     idxArr.append(contentsOf: tupleToArray(tuple: bIdx))
                     idxArr.append(contentsOf: tupleToArray(tuple: bIdx))
                     idxArr.append(contentsOf: tupleToArray(tuple: cIdx))
@@ -115,7 +115,14 @@ final class Model {
                     idxArr.append(contentsOf: tupleToArray(tuple: aIdx))
                     
                     idxArr.append(contentsOf: tupleToArray(tuple: aIdx))
-                    idxArr.append(contentsOf: tupleToArray(tuple: cIdx))
+                    idxArr.append(contentsOf: tupleToArray(tuple: cIdx))*/
+                    
+                    idxArr.append(contentsOf: tupleToArray(tuple: aIdx));
+                    idxArr.append(contentsOf: tupleToArray(tuple: bIdx));
+                    idxArr.append(contentsOf: tupleToArray(tuple: cIdx));
+                    idxArr.append(contentsOf: tupleToArray(tuple: aIdx));
+                    idxArr.append(contentsOf: tupleToArray(tuple: cIdx));
+                    idxArr.append(contentsOf: tupleToArray(tuple: dIdx));
                     
                     
                     vertexIndicies.append(contentsOf: idxArr)

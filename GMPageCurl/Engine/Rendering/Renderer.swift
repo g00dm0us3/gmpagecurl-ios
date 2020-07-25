@@ -24,7 +24,9 @@ final class Renderer {
 
     private(set) var perspectiveMatrix: simd_float4x4
     private let inputTexture:MTLTexture
+    private let outputTexture:MTLTexture // positions textures
     private let computedNormals: MTLTexture
+    private var depthTexture: MTLTexture!
 
     init() {
         model = Model()
@@ -38,6 +40,7 @@ final class Renderer {
         inputTexture.replace(region: MTLRegionMake2D(0, 0, model.columns, model.rows), mipmapLevel: 0, withBytes: &kernelData, bytesPerRow: 4*MemoryLayout<Float32>.size*model.columns)
         
         computedNormals = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
+        outputTexture = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
     }
 
     func render(in layer: CAMetalLayer) {
@@ -46,13 +49,22 @@ final class Renderer {
 
         let commandBuffer = renderingPipeline.getCommandBuffer()
 
+        let drawable = self.drawable(from: layer)
+        
+        computePositionsPass(commandBuffer)
+        shadowRenderPass(commandBuffer, (drawable.texture.width, drawable.texture.height))
+        colorRenderPass(commandBuffer, drawable)
+
+        commandBuffer.present(drawable)
+        commandBuffer.commit()
+    }
+    
+    private func computePositionsPass(_ commandBuffer: MTLCommandBuffer) {
         let computePositionsPassEncoder = commandBuffer.makeComputeCommandEncoder()!
         
         computePositionsPassEncoder.pushDebugGroup("COMPUTE POSITIONS")
         let computePositionsPipelineState = renderingPipeline.createKernelPipelineState("compute_positions")
 
-        let outputTexture = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
-        
         computePositionsPassEncoder.setComputePipelineState(computePositionsPipelineState)
         computePositionsPassEncoder.setTexture(inputTexture, index: 0)
         computePositionsPassEncoder.setTexture(outputTexture, index: 1)
@@ -77,36 +89,77 @@ final class Renderer {
         
         computePositionsPassEncoder.endEncoding()
         computePositionsPassEncoder.popDebugGroup()
+    }
+    
+    private func shadowRenderPass(_ commandBuffer: MTLCommandBuffer, _ size: (width: Int, height: Int)) {
+        // MARK: Depth Texture
+        let depthtextureDesc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .depth32Float, width: size.width, height: size.height, mipmapped: false)
+        depthtextureDesc.storageMode = .private
+        depthtextureDesc.usage = [.shaderRead, .renderTarget]
+        depthTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: depthtextureDesc)
         
-
-        let drawable = self.drawable(from: layer)
-        let primitiveType = MTLPrimitiveType.line
-
-        let renderPassDescriptor = renderingPipeline.renderPassDescriptor()
-
-        renderPassDescriptor.colorAttachments[0].texture = drawable.texture
-
+        // MARK: Setup Render Pass Descriptor
+        let renderPassDescriptor = MTLRenderPassDescriptor()
+        
+        let depthAttachemntDescriptor = MTLRenderPassDepthAttachmentDescriptor()
+        
+        depthAttachemntDescriptor.texture = depthTexture
+        depthAttachemntDescriptor.loadAction = .clear
+        depthAttachemntDescriptor.storeAction = .store
+        depthAttachemntDescriptor.clearDepth = 1
+        
+        renderPassDescriptor.depthAttachment = depthAttachemntDescriptor
+        
+        // MARK: Setup Render Pipeline State
+        let shadowPipelineState = try! renderingPipeline.makeShadowPipelineState()
+        
+        // MARK: Configure Depth on render pass
+        let depthDescriptor = MTLDepthStencilDescriptor()
+        depthDescriptor.depthCompareFunction = .lessEqual
+        depthDescriptor.isDepthWriteEnabled = true
+        guard let depthState = RenderingDevice.defaultDevice.makeDepthStencilState(descriptor: depthDescriptor) else { fatalError("Cannot make depth texture, yo") }
+        
         let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor)!
-        renderEncoder.pushDebugGroup("COLOR")
-        renderEncoder.label = "CL"
-
-        renderEncoder.setFrontFacing(.counterClockwise)
-        renderEncoder.setCullMode(MTLCullMode.none)
-
-        renderEncoder.setRenderPipelineState(renderingPipeline.colorPipelineState!)
-
+        renderEncoder.pushDebugGroup("SHADOW")
+        
+        // cull & front facing
+        renderEncoder.setRenderPipelineState(shadowPipelineState)
+        renderEncoder.setDepthStencilState(depthState)
+        
         renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 0)
         renderEncoder.setVertexBuffer(vertexIndexBuffer, offset: 0, index: 1)
         
         renderEncoder.setVertexTexture(outputTexture, index: 0)
         renderEncoder.setVertexTexture(computedNormals, index: 1) // computed vertices / normals
 
-        renderEncoder.drawPrimitives(type: .line, vertexStart: 0, vertexCount: model.vertexIndicies.count/2)
+        renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: model.vertexIndicies.count/2)
         renderEncoder.popDebugGroup()
         renderEncoder.endEncoding()
+    }
+    
+    private func colorRenderPass(_ commandBuffer: MTLCommandBuffer, _ drawable: CAMetalDrawable) {
+        // MARK: Start Color Pass
+        let renderPassDescriptor = renderingPipeline.renderPassDescriptor()
+        
+        renderPassDescriptor.colorAttachments[0].texture = drawable.texture
+        let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor)!
+        
+        renderEncoder.pushDebugGroup("COLOR")
+        renderEncoder.label = "CL"
+        
+        renderEncoder.setRenderPipelineState(renderingPipeline.colorPipelineState!) // - TODO: what in the actual fuck?!
+        
+        renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 0)
+        renderEncoder.setVertexBuffer(vertexIndexBuffer, offset: 0, index: 1)
+        
+        renderEncoder.setVertexTexture(outputTexture, index: 0)
+        renderEncoder.setVertexTexture(computedNormals, index: 1) // computed vertices / normals
+        
+        renderEncoder.setFragmentTexture(depthTexture, index: 0)
 
-        commandBuffer.present(drawable)
-        commandBuffer.commit()
+        renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: model.vertexIndicies.count/2)
+        renderEncoder.popDebugGroup()
+        renderEncoder.endEncoding()
     }
 
     private func drawable(from layer: CAMetalLayer) -> CAMetalDrawable {
