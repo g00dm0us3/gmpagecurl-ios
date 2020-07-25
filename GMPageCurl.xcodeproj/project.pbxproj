@@ -111,7 +111,7 @@
 		E5C4CEAB223BA7B70077B654 /* GMPageCurl */ = {
 			isa = PBXGroup;
 			children = (
-				E5C75317223D0EFE004D46CA /* Engine */,
+				E5C75317223D0EFE004D46CA /* Core */,
 				E5C4CECF223BBBF40077B654 /* Shaders.metal */,
 				E5C4CEAC223BA7B70077B654 /* AppDelegate.swift */,
 				E5C4CEAE223BA7B70077B654 /* ViewController.swift */,
@@ -141,7 +141,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		E5C75317223D0EFE004D46CA /* Engine */ = {
+		E5C75317223D0EFE004D46CA /* Core */ = {
 			isa = PBXGroup;
 			children = (
 				E541784924C01DD5000040B8 /* Input Manager */,
@@ -150,7 +150,7 @@
 				E5C7531C223D13AA004D46CA /* Vertex.swift */,
 				E5AB191F22725A17007521F5 /* MatrixUtils.swift */,
 			);
-			path = Engine;
+			path = Core;
 			sourceTree = "<group>";
 		};
 		E5C75320223D1B84004D46CA /* Rendering */ = {
