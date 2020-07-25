@@ -31,15 +31,18 @@ typedef struct
 
 typedef struct {
     float4 position [[position]];
-    float3 orig; // used for debugging (position, w/o multiplication by model and perspective matrices)
-    float4  color;
+    float4 color;
     float4 texture_coordinate;
-    float point_size [[point_size]];
+    float3 normal;
+    float4 fragment_in_light_space;
+    float3 fragment_in_model_space;
 } VertexOut;
 
 typedef struct {
+    float4x4 lightMatrix;
     float4x4 modelMatrix;
     float4x4 perspectiveMatrix;
+    float3x3 lightModelMatrix;
 } Uniforms;
 
 typedef struct {
@@ -279,26 +282,34 @@ vertex VertexOut vertex_function(texture2d<float> tex_vertices [[texture(0)]],
     float3 position = packed_float3(tex_vertices.read(tex_coord).xyz);
 
     float4 pos = float4(position.xyz, 1);
-
+    float3 normal = float3(tex_normals.read(tex_coord).xyz);
     
-    out.point_size = 2;
-    out.orig = float3((uniforms.modelMatrix*pos).xyz);
-    out.position = uniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
+    out.fragment_in_model_space = float3((uniforms.modelMatrix * pos).xyz);
+    out.normal = uniforms.lightModelMatrix * normal;
+    out.fragment_in_light_space = uniforms.lightMatrix * float4(out.fragment_in_model_space, 1);
     out.texture_coordinate = uniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
+    out.position = uniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
     out.color = float4(0,0,1,1);
     
     return out;
 }
 
-// make this color / light shader
-fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> depth [[texture(0)]])
-{
+float calculate_shadow(float4 fragment_in_light_space, depth2d<float> depth) {
     constexpr sampler texSampler(coord::normalized, filter::linear, address::clamp_to_edge, compare_func::less);
-    float2 xy = in.texture_coordinate.xy / in.texture_coordinate.w;
+    float2 xy = fragment_in_light_space.xy / fragment_in_light_space.w;
     xy = xy* 0.5 + 0.5;
     xy.y = 1 - xy.y;
     
     float val = depth.sample(texSampler, xy);
+    
+    return val;
+}
+
+// make this color / light shader
+fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> depth [[texture(0)]])
+{
+    float val = calculate_shadow(in.fragment_in_light_space, depth);
+    
     return float4(val,0,0,1);
     //return in.color;
 }
@@ -314,5 +325,5 @@ vertex float4 vertex_pos_only(texture2d<float> tex_vertices [[texture(0)]],
 
     float4 pos = float4(position.xyz, 1);
 
-    return uniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
+    return uniforms.lightMatrix * uniforms.modelMatrix * pos;
 }

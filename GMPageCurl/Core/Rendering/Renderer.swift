@@ -24,7 +24,8 @@ final class Renderer {
     private var renderingPipeline: RenderingPipeline
     private var model: Model
 
-    private(set) var perspectiveMatrix: simd_float4x4
+    private var perspectiveMatrix: simd_float4x4
+    private var lightMatrix: simd_float4x4
     private let inputTexture:MTLTexture
     private let computedPositions:MTLTexture // positions textures
     private let computedNormals: MTLTexture
@@ -35,6 +36,12 @@ final class Renderer {
         renderingPipeline = RenderingPipeline()
 
         perspectiveMatrix = MatrixUtils.matrix_perspective(aspect: 1, fovy: 90.0, near: 0.1, far: 100)
+        
+        
+        let ortho = MatrixUtils.matrix_ortho(left: -1, right: 1, bottom: -1, top: 1, near: 1, far: -1)
+        let lightView = MatrixUtils.matrix_lookat(at: simd_float3(0,0,0), eye: simd_float3(0,0,-1), up: simd_float3(0,1,0))
+        lightMatrix = ortho * lightView
+        
         inputTexture = renderingPipeline.makeInputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
         
         var kernelData = model.serializedVertexDataForCompute
@@ -182,9 +189,12 @@ final class Renderer {
         guard let uniformBufferPointer = uniformBuffer?.contents() else { fatalError("Couldn't access buffer") }
 
         var worldMatrix = InputManager.defaultManager.worldMatrix
+        var lightModelMatrix = InputManager.defaultManager.lightModelMatrix
 
-        memcpy(uniformBufferPointer, &worldMatrix, MatrixUtils.matrix4x4Size)
-        memcpy(uniformBufferPointer + MatrixUtils.matrix4x4Size, &perspectiveMatrix, MatrixUtils.matrix4x4Size)
+        memcpy(uniformBufferPointer, &lightMatrix, MatrixUtils.matrix4x4Size)
+        memcpy(uniformBufferPointer + MatrixUtils.matrix4x4Size, &worldMatrix, MatrixUtils.matrix4x4Size)
+        memcpy(uniformBufferPointer + 2*MatrixUtils.matrix4x4Size, &perspectiveMatrix, MatrixUtils.matrix4x4Size)
+        memcpy(uniformBufferPointer + 3*MatrixUtils.matrix4x4Size, &lightModelMatrix, MatrixUtils.matrix4x4Size)
 
         guard let inputBuifferPointer = inputBuffer?.contents() else { fatalError("Couldn't access buffer") }
 
@@ -202,7 +212,7 @@ final class Renderer {
         let device = RenderingDevice.defaultDevice
 
         if uniformBuffer == nil {
-            let totalSz = 2*MatrixUtils.matrix4x4Size
+            let totalSz = 4*MatrixUtils.matrix4x4Size
 
             guard let buffer = device.makeBuffer(length: totalSz, options: []) else { fatalError("Couldn't create a uniform buffer") }
 

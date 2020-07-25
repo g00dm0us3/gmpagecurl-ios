@@ -30,6 +30,14 @@ final class InputManager {
 
         return translation*scaleMatrix*rotationMatrixX*rotationMatrixY
     }
+    
+    var lightModelMatrix: simd_float3x3 {
+        let lightModelMatrix = simd_float3x3([
+            simd_float3(worldMatrix[0][0],worldMatrix[0][1],worldMatrix[0][2]),
+            simd_float3(worldMatrix[1][0],worldMatrix[1][1],worldMatrix[1][2]),
+            simd_float3(worldMatrix[2][0],worldMatrix[2][1],worldMatrix[2][2])]).inverse;
+        return lightModelMatrix.transpose
+    }
 
     private var scale: Float = 1
     private var lastScale: Float = 1
