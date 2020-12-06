@@ -128,6 +128,7 @@ inline float2 get_point_on_inflection_border(float2 pointOnPlane, float phi, flo
 */
 
 inline float4 calculate_position(packed_float3 position, float phi, float xCoord, int viewState) {
+    return float4(position.xyz,1);
     xCoord = NDT_MAX_COORD - xCoord; // conversion to the Metal coordinate system
     if (xCoord == NDT_MAX_COORD || !should_transform(position, phi, xCoord)) { return float4(position.xyz,1); }
     
@@ -179,7 +180,6 @@ inline float4 calculate_position(packed_float3 position, float phi, float xCoord
     
     // Convert point on box into a point on cylinder inside this box
     axisToBoxVec = normalize(axisToBoxVec);
-
     axisToBoxVec *= CYLINDER_RADIUS;
     axisToBoxVec += pointOnCylinderAxis;
     
@@ -251,7 +251,7 @@ kernel void compute_normals(const texture2d<float> vertices [[texture(0)]],
     
     
     //normals.write(float4(angleCos, 0, 0, 180*acos(angleCos)/PI), tid);
-    normals.write(float4(n, 1), tid);
+    normals.write(float4(float3(point.x, point.y, n.z), 1), tid);
 }
 
 vertex VertexOut vertex_function(texture2d<float> tex_vertices [[texture(0)]],
@@ -298,10 +298,10 @@ fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> dept
 {
     float3 normal = normalize(in.normal);
     
-    float3 light_pos = float3(1,0.2,-1);
-    if (dot(normal, light_pos) < 0) {
+    float3 light_pos = float3(-0.8,0.8,0.9);
+    /*if (dot(normal, light_pos) < 0) {
         normal = -normal;
-    }
+    }*/
     
     float3 light_color = float3(1,1,1);
     float3 ambient = 0.15*light_color;
@@ -321,7 +321,7 @@ fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> dept
     
     float3 lighting = (ambient + (1-val) * (diffuse + specular)) * float3(1,0,0);
     
-    return float4(lighting.xyz, 1);
+    return float4(diffuse, 1);
     //return in.color;
 }
 
