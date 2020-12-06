@@ -1,14 +1,10 @@
 # gmpagecurl-ios - Under Construction
-A page curl effect for iOS using Metal. The main idea - cylinder rolls on a sheet of paper, sheet of paper covers cylinder.
-
-## Demo application available in dev. branch.
-Use pinch gesture to zoom in and out. Use "View State" button to switch between cylindrical and box views (the idea is to smooth box on the cylinder inside it - place all points around axis equidistant, yielding a circular cross-section, instead of rectangular).
-![Alt text](/demo_app.png?raw=true "Demo App Screenshot")
+A page curl effect for iOS using Metal. Has tolerable light and shadows at this point. Moving towards making it a usable component.
 
 ## TODO
-- 𝛗 and displacement input.
-- Light
+
+- 𝛗 / displacement controlled by gesture
 - Textures
-- Render arbitrary views into textures (switcharoo when user starts dragging).
-- Package as Pod
+- Render arbitrary views into textures.
+- Package as pod.
 
