@@ -11,7 +11,7 @@
 #include <simd/simd.h>
 
 #define PI 3.14159265358979323846
-#define CYLINDER_RADIUS 0.1
+#define CYLINDER_RADIUS 0.07
 
 #define PHI_EPSILON 1e-2
 #define EPSILON 1e-6
@@ -128,7 +128,7 @@ inline float2 get_point_on_inflection_border(float2 pointOnPlane, float phi, flo
 */
 
 inline float4 calculate_position(packed_float3 position, float phi, float xCoord, int viewState) {
-    return float4(position.xyz,1);
+    //return float4(position.xyz,1);
     xCoord = NDT_MAX_COORD - xCoord; // conversion to the Metal coordinate system
     if (xCoord == NDT_MAX_COORD || !should_transform(position, phi, xCoord)) { return float4(position.xyz,1); }
     
@@ -288,7 +288,7 @@ float calculate_shadow(float4 fragment_in_light_space, depth2d<float> depth) {
     float val = depth.sample(texSampler, xy);
     
     float b = 0.007;
-    float shadow = xyz.z-b > val ? 0.5 : 0.0;
+    float shadow = xyz.z - b > val ? 0.5 : 0.0;
     
     return shadow;
 }
@@ -298,31 +298,25 @@ fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> dept
 {
     float3 normal = normalize(in.normal);
     
-    float3 light_pos = float3(-0.8,0.8,0.9);
-    /*if (dot(normal, light_pos) < 0) {
-        normal = -normal;
-    }*/
+    float3 light_pos = float3(0,0,0.9);
     
+    /// @note: this happens, if there is a roof (normal points downward from there, dot < 0, roof is rendered pitch black)
     float3 light_color = float3(1,1,1);
-    float3 ambient = 0.15*light_color;
+    if (dot(normal, light_pos) < 0) {
+        normal = -normal;
+        light_color = float3(0.9, 0.8, 0.8);
+    }
     
-    float3 view_pos = float3(0.5,0.5,2);
+    // - todo: is it needed?
+    //float3 ambient = 0.15*light_color;
     
     float3 light_direction = normalize(light_pos);
     float diff = max(dot(light_direction, normal), (float)0);
     float3 diffuse = diff*light_color;
-    
-    float3 view_direction = normalize(view_pos - in.fragment_in_model_space);
-    float spec = 0;
-    float3 halfway_dir = normalize(light_direction+view_direction);
-    spec = pow(max(dot(normal, halfway_dir), 0.0), 64.0);
-    float3 specular = spec * light_color;
+
     float val = calculate_shadow(in.fragment_in_light_space, depth);
-    
-    float3 lighting = (ambient + (1-val) * (diffuse + specular)) * float3(1,0,0);
-    
-    return float4(diffuse, 1);
-    //return in.color;
+
+    return float4((1-val)*diffuse*(light_color), 1);
 }
 
 vertex float4 vertex_pos_only(texture2d<float> tex_vertices [[texture(0)]],

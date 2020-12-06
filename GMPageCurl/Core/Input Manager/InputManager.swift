@@ -76,8 +76,15 @@ final class InputManager {
     }
 
     private init() {
-        displacement = 0.5
+        displacement = 0.0
         phi = InputManager.degree2rad(degree:45)
+        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { (timer) in
+            if self.displacement >= 1 {
+                self.displacement = 0
+                return
+            }
+            self.displacement += 0.01
+        }
     }
 
     // MARK: Static
