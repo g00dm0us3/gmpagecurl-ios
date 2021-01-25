@@ -9,9 +9,7 @@
 import UIKit
 import Metal
 
-enum RenderViewStates: Int {
-    case box = 1, cylinder = 0
-}
+
 
 class ViewController: RenderingViewController {
 

@@ -22,7 +22,7 @@ final class RenderingTestInputManager {
     var viewState: Int = 0
 
     var worldMatrix: simd_float4x4 {
-        let translation = MatrixUtils.matrix4x4Translate(t: simd_float3(arrayLiteral: 0, 0, -1.1))
+        let translation = MatrixUtils.matrix4x4Translate(t: simd_float3(arrayLiteral: 0, 0, -1.01))
         let scaleMatrix = MatrixUtils.matrix4x4Scale(scale: simd_float3(arrayLiteral: scale, scale, scale))
 
         let rotationMatrixX = MatrixUtils.matrix4x4RotateAroundX(theta: thetaY)

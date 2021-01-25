@@ -7,8 +7,25 @@
 //
 
 import Foundation
+import CoreGraphics
+import simd
 
+enum RenderViewStates: Int {
+    case box = 1, cylinder = 0
+}
 
 protocol InputManager {
+    var renderingViewState: RenderViewStates { get set }
     
+    var worldMatrix: simd_float4x4 { get }
+    
+    var phi: CGFloat { get }
+    
+    var radius: CGFloat { get }
+    
+    func panGestureChanged(_ translation: CGPoint, velocity: CGPoint)
+    func panGestureEnded()
+
+    func pinchGestureChanged(_ scale: Float)
+    func pinchGestureEnded()
 }
