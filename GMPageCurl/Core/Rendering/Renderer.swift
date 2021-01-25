@@ -12,6 +12,8 @@ import Metal
 import simd
 import CoreGraphics
 
+// - TODO: cleanup code.
+
 final class Renderer {
     private var vertexBuffer: MTLBuffer?
     private var uniformBuffer: MTLBuffer?
@@ -22,9 +24,10 @@ final class Renderer {
     private var renderingPipeline: RenderingPipeline
     private var model: Model
 
-    private(set) var perspectiveMatrix: simd_float4x4
+    private var perspectiveMatrix: simd_float4x4
+    private var lightMatrix: simd_float4x4
     private let inputTexture:MTLTexture
-    private let outputTexture:MTLTexture // positions textures
+    private let computedPositions:MTLTexture // positions textures
     private let computedNormals: MTLTexture
     private var depthTexture: MTLTexture!
 
@@ -33,6 +36,12 @@ final class Renderer {
         renderingPipeline = RenderingPipeline()
 
         perspectiveMatrix = MatrixUtils.matrix_perspective(aspect: 1, fovy: 90.0, near: 0.1, far: 100)
+        
+        
+        let ortho = MatrixUtils.matrix_ortho(left: -1, right: 1, bottom: -1, top: 1, near: 1, far: -1)
+        let lightView = MatrixUtils.matrix_lookat(at: simd_float3(0,0,0), eye: simd_float3(0,0,-1), up: simd_float3(0,1,0))
+        lightMatrix = ortho * lightView
+        
         inputTexture = renderingPipeline.makeInputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
         
         var kernelData = model.serializedVertexDataForCompute
@@ -40,11 +49,10 @@ final class Renderer {
         inputTexture.replace(region: MTLRegionMake2D(0, 0, model.columns, model.rows), mipmapLevel: 0, withBytes: &kernelData, bytesPerRow: 4*MemoryLayout<Float32>.size*model.columns)
         
         computedNormals = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
-        outputTexture = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
+        computedPositions = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
     }
 
     func render(in layer: CAMetalLayer) {
-
         fillBuffers()
 
         let commandBuffer = renderingPipeline.getCommandBuffer()
@@ -67,7 +75,7 @@ final class Renderer {
 
         computePositionsPassEncoder.setComputePipelineState(computePositionsPipelineState)
         computePositionsPassEncoder.setTexture(inputTexture, index: 0)
-        computePositionsPassEncoder.setTexture(outputTexture, index: 1)
+        computePositionsPassEncoder.setTexture(computedPositions, index: 1)
         computePositionsPassEncoder.setBuffer(inputBuffer, offset: 0, index: 0)
 
         let w = computePositionsPipelineState.threadExecutionWidth
@@ -82,7 +90,7 @@ final class Renderer {
         
         let computeNormalsPipelineState = renderingPipeline.createKernelPipelineState("compute_normals")
         computePositionsPassEncoder.setComputePipelineState(computeNormalsPipelineState)
-        computePositionsPassEncoder.setTexture(outputTexture, index: 0)
+        computePositionsPassEncoder.setTexture(computedPositions, index: 0)
         computePositionsPassEncoder.setTexture(computedNormals, index: 1)
         
         computePositionsPassEncoder.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
@@ -129,7 +137,7 @@ final class Renderer {
         renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 0)
         renderEncoder.setVertexBuffer(vertexIndexBuffer, offset: 0, index: 1)
         
-        renderEncoder.setVertexTexture(outputTexture, index: 0)
+        renderEncoder.setVertexTexture(computedPositions, index: 0)
         renderEncoder.setVertexTexture(computedNormals, index: 1) // computed vertices / normals
 
         renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: model.vertexIndicies.count/2)
@@ -152,7 +160,7 @@ final class Renderer {
         renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 0)
         renderEncoder.setVertexBuffer(vertexIndexBuffer, offset: 0, index: 1)
         
-        renderEncoder.setVertexTexture(outputTexture, index: 0)
+        renderEncoder.setVertexTexture(computedPositions, index: 0)
         renderEncoder.setVertexTexture(computedNormals, index: 1) // computed vertices / normals
         
         renderEncoder.setFragmentTexture(depthTexture, index: 0)
@@ -180,16 +188,19 @@ final class Renderer {
 
         guard let uniformBufferPointer = uniformBuffer?.contents() else { fatalError("Couldn't access buffer") }
 
-        var worldMatrix = InputManager.defaultManager.worldMatrix
+        var worldMatrix = RenderingTestInputManager.defaultManager.worldMatrix
+        var lightModelMatrix = RenderingTestInputManager.defaultManager.lightModelMatrix
 
-        memcpy(uniformBufferPointer, &worldMatrix, MatrixUtils.matrix4x4Size)
-        memcpy(uniformBufferPointer + MatrixUtils.matrix4x4Size, &perspectiveMatrix, MatrixUtils.matrix4x4Size)
+        memcpy(uniformBufferPointer, &lightMatrix, MatrixUtils.matrix4x4Size)
+        memcpy(uniformBufferPointer + MatrixUtils.matrix4x4Size, &worldMatrix, MatrixUtils.matrix4x4Size)
+        memcpy(uniformBufferPointer + 2*MatrixUtils.matrix4x4Size, &perspectiveMatrix, MatrixUtils.matrix4x4Size)
+        memcpy(uniformBufferPointer + 3*MatrixUtils.matrix4x4Size, &lightModelMatrix, MatrixUtils.matrix4x4Size)
 
         guard let inputBuifferPointer = inputBuffer?.contents() else { fatalError("Couldn't access buffer") }
 
-        var displacement = InputManager.defaultManager.displacement
-        var phi = InputManager.defaultManager.phi
-        var viewState = InputManager.defaultManager.viewState
+        var displacement = RenderingTestInputManager.defaultManager.displacement
+        var phi = RenderingTestInputManager.defaultManager.phi
+        var viewState = RenderingTestInputManager.defaultManager.viewState
 
         memcpy(inputBuifferPointer, &displacement, MemoryLayout<Float>.size)
         memcpy(inputBuifferPointer + MemoryLayout<Float>.size, &phi, MemoryLayout<Float>.size)
@@ -201,7 +212,7 @@ final class Renderer {
         let device = RenderingDevice.defaultDevice
 
         if uniformBuffer == nil {
-            let totalSz = 2*MatrixUtils.matrix4x4Size
+            let totalSz = 4*MatrixUtils.matrix4x4Size
 
             guard let buffer = device.makeBuffer(length: totalSz, options: []) else { fatalError("Couldn't create a uniform buffer") }
 

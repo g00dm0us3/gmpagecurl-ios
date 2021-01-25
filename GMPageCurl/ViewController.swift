@@ -38,7 +38,7 @@ class ViewController: RenderingViewController {
         currentState = currentState == .box ? .cylinder : .box
         sender.title = buttonTitles[currentState.rawValue]
 
-        InputManager.defaultManager.viewState = currentState.rawValue
+        RenderingTestInputManager.defaultManager.viewState = currentState.rawValue
     }
 
     override func touchesBegan(_ touches: Set<UITouch>,
@@ -59,20 +59,20 @@ class ViewController: RenderingViewController {
     @objc
     func pinch(gesture: UIPinchGestureRecognizer) {
         if (gesture.state == UIGestureRecognizer.State.ended) {
-            InputManager.defaultManager.saveScale()
+            RenderingTestInputManager.defaultManager.saveScale()
             return
         }
-        InputManager.defaultManager.updateScale(Float(gesture.scale))
+        RenderingTestInputManager.defaultManager.updateScale(Float(gesture.scale))
     }
 
     @objc
     func move(gesture: UIPanGestureRecognizer) {
         if(gesture.state == UIGestureRecognizer.State.ended) {
-            InputManager.defaultManager.saveRotations()
+            RenderingTestInputManager.defaultManager.saveRotations()
             return
         }
 
         let translation = gesture.translation(in: view)
-        InputManager.defaultManager.updateRotation(translation)
+        RenderingTestInputManager.defaultManager.updateRotation(translation)
     }
 }

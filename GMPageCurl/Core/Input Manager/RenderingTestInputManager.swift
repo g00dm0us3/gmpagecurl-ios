@@ -12,8 +12,8 @@ import CoreGraphics
 import UIKit
 
 // - TODO: controlls for page turning
-final class InputManager {
-    static let defaultManager = InputManager()
+final class RenderingTestInputManager {
+    static let defaultManager = RenderingTestInputManager()
 
     var displacement: Float
     var phi: Float
@@ -29,6 +29,14 @@ final class InputManager {
         let rotationMatrixY = MatrixUtils.matrix4x4RotateAroundY(theta: thetaX)
 
         return translation*scaleMatrix*rotationMatrixX*rotationMatrixY
+    }
+    
+    var lightModelMatrix: simd_float3x3 {
+        let lightModelMatrix = simd_float3x3([
+            simd_float3(worldMatrix[0][0],worldMatrix[0][1],worldMatrix[0][2]),
+            simd_float3(worldMatrix[1][0],worldMatrix[1][1],worldMatrix[1][2]),
+            simd_float3(worldMatrix[2][0],worldMatrix[2][1],worldMatrix[2][2])]).inverse;
+        return lightModelMatrix.transpose
     }
 
     private var scale: Float = 1
@@ -63,13 +71,20 @@ final class InputManager {
         let thetaX = (x/maxX)*2*Float.pi
         let thetaY = (y/maxY)*2*Float.pi
 
-        self.thetaX = InputManager.congruentAngle(lastThetaX + thetaX)
-        self.thetaY = InputManager.congruentAngle(lastThetaY + thetaY)
+        self.thetaX = RenderingTestInputManager.congruentAngle(lastThetaX + thetaX)
+        self.thetaY = RenderingTestInputManager.congruentAngle(lastThetaY + thetaY)
     }
 
     private init() {
-        displacement = 0.5
-        phi = InputManager.degree2rad(degree:45)
+        displacement = 0.6
+        phi = RenderingTestInputManager.degree2rad(degree:20)
+        /*Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { (timer) in
+            if self.displacement >= 1 {
+                self.displacement = 0.21
+                return
+            }
+            self.displacement += 0.01
+        }*/
     }
 
     // MARK: Static
