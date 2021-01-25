@@ -188,8 +188,8 @@ final class Renderer {
 
         guard let uniformBufferPointer = uniformBuffer?.contents() else { fatalError("Couldn't access buffer") }
 
-        var worldMatrix = InputManager.defaultManager.worldMatrix
-        var lightModelMatrix = InputManager.defaultManager.lightModelMatrix
+        var worldMatrix = RenderingTestInputManager.defaultManager.worldMatrix
+        var lightModelMatrix = RenderingTestInputManager.defaultManager.lightModelMatrix
 
         memcpy(uniformBufferPointer, &lightMatrix, MatrixUtils.matrix4x4Size)
         memcpy(uniformBufferPointer + MatrixUtils.matrix4x4Size, &worldMatrix, MatrixUtils.matrix4x4Size)
@@ -198,9 +198,9 @@ final class Renderer {
 
         guard let inputBuifferPointer = inputBuffer?.contents() else { fatalError("Couldn't access buffer") }
 
-        var displacement = InputManager.defaultManager.displacement
-        var phi = InputManager.defaultManager.phi
-        var viewState = InputManager.defaultManager.viewState
+        var displacement = RenderingTestInputManager.defaultManager.displacement
+        var phi = RenderingTestInputManager.defaultManager.phi
+        var viewState = RenderingTestInputManager.defaultManager.viewState
 
         memcpy(inputBuifferPointer, &displacement, MemoryLayout<Float>.size)
         memcpy(inputBuifferPointer + MemoryLayout<Float>.size, &phi, MemoryLayout<Float>.size)

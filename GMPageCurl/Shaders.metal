@@ -10,8 +10,8 @@
 #include <metal_stdlib>
 #include <simd/simd.h>
 
-#define PI 3.14159265358979323846
-#define CYLINDER_RADIUS 0.07
+#define PI 3.1415926535897932384626433832795
+#define CYLINDER_RADIUS 0.2
 
 #define PHI_EPSILON 1e-2
 #define EPSILON 1e-6
@@ -243,14 +243,7 @@ kernel void compute_normals(const texture2d<float> vertices [[texture(0)]],
     }
     
     n = normalize(n);
-    
-    // FOR DEBUG
-    //float dotProduct = dot(normalize(float3(1,0,0)), n);
-    //float angleCos = max((float)dotProduct, (float)-1.0);
-    //angleCos = min(angleCos, (float)1.0);
-    
-    
-    //normals.write(float4(angleCos, 0, 0, 180*acos(angleCos)/PI), tid);
+
     normals.write(float4(float3(point.x, point.y, n.z), 1), tid);
 }
 
@@ -306,17 +299,14 @@ fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> dept
         normal = -normal;
         light_color = float3(0.9, 0.8, 0.8);
     }
-    
-    // - todo: is it needed?
-    //float3 ambient = 0.15*light_color;
-    
+
     float3 light_direction = normalize(light_pos);
     float diff = max(dot(light_direction, normal), (float)0);
     float3 diffuse = diff*light_color;
 
     float val = calculate_shadow(in.fragment_in_light_space, depth);
-
-    return float4((1-val)*diffuse*(light_color), 1);
+    
+    return float4((1-val)*diffuse, 1);
 }
 
 vertex float4 vertex_pos_only(texture2d<float> tex_vertices [[texture(0)]],
