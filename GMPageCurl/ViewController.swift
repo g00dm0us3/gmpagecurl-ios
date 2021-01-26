@@ -9,9 +9,7 @@
 import UIKit
 import Metal
 
-
-
-class ViewController: RenderingViewController {
+final class ViewController: RenderingViewController {
 
     var gestureRecognizer: UIPanGestureRecognizer!
     var pinchGestureRecognizer: UIPinchGestureRecognizer!
@@ -29,14 +27,12 @@ class ViewController: RenderingViewController {
 
         pinchGestureRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(pinch))
         view.addGestureRecognizer(pinchGestureRecognizer)
-
     }
 
     @IBAction func switchView(_ sender: UIBarButtonItem) {
         currentState = currentState == .box ? .cylinder : .box
         sender.title = buttonTitles[currentState.rawValue]
-
-        RenderingTestInputManager.defaultManager.viewState = currentState.rawValue
+        inputManager.setRenderingState(currentState)
     }
 
     override func touchesBegan(_ touches: Set<UITouch>,
@@ -57,20 +53,21 @@ class ViewController: RenderingViewController {
     @objc
     func pinch(gesture: UIPinchGestureRecognizer) {
         if (gesture.state == UIGestureRecognizer.State.ended) {
-            RenderingTestInputManager.defaultManager.saveScale()
+            inputManager.pinchGestureEnded()
             return
         }
-        RenderingTestInputManager.defaultManager.updateScale(Float(gesture.scale))
+        inputManager.pinchGestureChanged(Float(gesture.scale))
     }
 
     @objc
     func move(gesture: UIPanGestureRecognizer) {
         if(gesture.state == UIGestureRecognizer.State.ended) {
-            RenderingTestInputManager.defaultManager.saveRotations()
+            inputManager.panGestureEnded()
             return
         }
 
         let translation = gesture.translation(in: view)
-        RenderingTestInputManager.defaultManager.updateRotation(translation)
+        let velocity = gesture.velocity(in: view)
+        inputManager.panGestureChanged(translation, velocity: velocity)
     }
 }

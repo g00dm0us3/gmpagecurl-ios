@@ -15,13 +15,15 @@ enum RenderViewStates: Int {
 }
 
 protocol InputManager {
-    var renderingViewState: RenderViewStates { get set }
+    var renderingViewState: RenderViewStates { get }
     
     var worldMatrix: simd_float4x4 { get }
     
-    var phi: CGFloat { get }
+    var phi: Float { get }
     
-    var radius: CGFloat { get }
+    var radius: Float { get }
+    
+    func setRenderingState(_ state: RenderViewStates)
     
     func panGestureChanged(_ translation: CGPoint, velocity: CGPoint)
     func panGestureEnded()

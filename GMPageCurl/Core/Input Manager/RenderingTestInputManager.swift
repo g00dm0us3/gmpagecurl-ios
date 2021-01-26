@@ -11,16 +11,9 @@ import simd
 import CoreGraphics
 import UIKit
 
-// - TODO: controlls for page turning
-final class RenderingTestInputManager {
-    static let defaultManager = RenderingTestInputManager()
-
-    var displacement: Float
-    var phi: Float
-
-    // 0 - cylinder, 1 - box
-    var viewState: Int = 0
-
+final class RenderingTestInputManager: InputManager {
+    var renderingViewState: RenderViewStates = .cylinder
+    
     var worldMatrix: simd_float4x4 {
         let translation = MatrixUtils.matrix4x4Translate(t: simd_float3(arrayLiteral: 0, 0, -1.01))
         let scaleMatrix = MatrixUtils.matrix4x4Scale(scale: simd_float3(arrayLiteral: scale, scale, scale))
@@ -31,14 +24,13 @@ final class RenderingTestInputManager {
         return translation*scaleMatrix*rotationMatrixX*rotationMatrixY
     }
     
-    var lightModelMatrix: simd_float3x3 {
-        let lightModelMatrix = simd_float3x3([
-            simd_float3(worldMatrix[0][0],worldMatrix[0][1],worldMatrix[0][2]),
-            simd_float3(worldMatrix[1][0],worldMatrix[1][1],worldMatrix[1][2]),
-            simd_float3(worldMatrix[2][0],worldMatrix[2][1],worldMatrix[2][2])]).inverse;
-        return lightModelMatrix.transpose
+    var phi: Float
+    var radius: Float
+    
+    func setRenderingState(_ state: RenderViewStates) {
+        renderingViewState = state
     }
-
+    
     private var scale: Float = 1
     private var lastScale: Float = 1
 
@@ -47,21 +39,25 @@ final class RenderingTestInputManager {
 
     private var lastThetaX: Float = 0
     private var lastThetaY: Float = 0
-
-    public func saveScale() {
+    
+    func pinchGestureChanged(_ scale: Float) {
+        self.scale = lastScale*scale
+    }
+    
+    func pinchGestureEnded() {
         lastScale = scale
     }
 
-    public func updateScale(_ scale: Float) {
-        self.scale = lastScale*scale
+    func panGestureChanged(_ translation: CGPoint, velocity: CGPoint) {
+        updateRotation(translation)
     }
-
-    public func saveRotations() {
+    
+    func panGestureEnded() {
         lastThetaX = thetaX
         lastThetaY = thetaY
     }
 
-    public func updateRotation(_ translation: CGPoint) {
+    private func updateRotation(_ translation: CGPoint) {
         let maxX = Float(UIScreen.main.bounds.maxX / 2)
         let maxY = Float(UIScreen.main.bounds.maxY / 2)
 
@@ -75,20 +71,11 @@ final class RenderingTestInputManager {
         self.thetaY = RenderingTestInputManager.congruentAngle(lastThetaY + thetaY)
     }
 
-    private init() {
-        displacement = 0.6
+    init() {
+        radius = 0.6
         phi = RenderingTestInputManager.degree2rad(degree:20)
-        /*Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { (timer) in
-            if self.displacement >= 1 {
-                self.displacement = 0.21
-                return
-            }
-            self.displacement += 0.01
-        }*/
     }
-
-    // MARK: Static
-
+    
     /**
      Reduce the number of rations to at most 1
      */

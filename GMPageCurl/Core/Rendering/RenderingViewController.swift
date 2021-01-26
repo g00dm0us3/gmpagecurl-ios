@@ -10,19 +10,23 @@ import Foundation
 import UIKit
 
 class RenderingViewController: UIViewController {
-    var renderer: Renderer
+    var renderer: Renderer!
     var cadDisplayLink: CADisplayLink!
     var renderingView: RenderingView!
+    
+    private var innerInputManager: InputManager = RenderingTestInputManager()
+    var inputManager: InputManager {
+        return innerInputManager
+    }
 
     init() {
-        renderer = Renderer()
         super.init(nibName: nil, bundle: nil)
+        renderer = Renderer(inputManager: inputManager)
     }
 
     required init?(coder aDecoder: NSCoder) {
-        renderer = Renderer()
-
         super.init(coder: aDecoder)
+        renderer = Renderer(inputManager: inputManager)
     }
 
     override func viewDidLoad() {

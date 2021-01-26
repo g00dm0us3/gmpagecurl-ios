@@ -30,8 +30,23 @@ final class Renderer {
     private let computedPositions:MTLTexture // positions textures
     private let computedNormals: MTLTexture
     private var depthTexture: MTLTexture!
-
-    init() {
+    
+    private var inputManager: InputManager
+    
+    private var worldMatrix: simd_float4x4 {
+        return inputManager.worldMatrix
+    }
+    
+    private var lightModelMatrix: simd_float3x3 {
+        let lightModelMatrix = simd_float3x3([
+            simd_float3(worldMatrix[0][0],worldMatrix[0][1],worldMatrix[0][2]),
+            simd_float3(worldMatrix[1][0],worldMatrix[1][1],worldMatrix[1][2]),
+            simd_float3(worldMatrix[2][0],worldMatrix[2][1],worldMatrix[2][2])]).inverse;
+        return lightModelMatrix.transpose
+    }
+    
+    init(inputManager: InputManager) {
+        self.inputManager = inputManager
         model = Model()
         renderingPipeline = RenderingPipeline()
 
@@ -51,7 +66,11 @@ final class Renderer {
         computedNormals = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
         computedPositions = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
     }
-
+    
+    func setInputManager(_ inputManager: InputManager) {
+        self.inputManager = inputManager
+    }
+    
     func render(in layer: CAMetalLayer) {
         fillBuffers()
 
@@ -188,8 +207,8 @@ final class Renderer {
 
         guard let uniformBufferPointer = uniformBuffer?.contents() else { fatalError("Couldn't access buffer") }
 
-        var worldMatrix = RenderingTestInputManager.defaultManager.worldMatrix
-        var lightModelMatrix = RenderingTestInputManager.defaultManager.lightModelMatrix
+        var worldMatrix = self.worldMatrix
+        var lightModelMatrix = self.lightModelMatrix
 
         memcpy(uniformBufferPointer, &lightMatrix, MatrixUtils.matrix4x4Size)
         memcpy(uniformBufferPointer + MatrixUtils.matrix4x4Size, &worldMatrix, MatrixUtils.matrix4x4Size)
@@ -198,11 +217,11 @@ final class Renderer {
 
         guard let inputBuifferPointer = inputBuffer?.contents() else { fatalError("Couldn't access buffer") }
 
-        var displacement = RenderingTestInputManager.defaultManager.displacement
-        var phi = RenderingTestInputManager.defaultManager.phi
-        var viewState = RenderingTestInputManager.defaultManager.viewState
+        var radius = inputManager.radius
+        var phi = inputManager.phi
+        var viewState = inputManager.renderingViewState.rawValue
 
-        memcpy(inputBuifferPointer, &displacement, MemoryLayout<Float>.size)
+        memcpy(inputBuifferPointer, &radius, MemoryLayout<Float>.size)
         memcpy(inputBuifferPointer + MemoryLayout<Float>.size, &phi, MemoryLayout<Float>.size)
         memcpy(inputBuifferPointer + 2*MemoryLayout<Float>.size, &viewState, MemoryLayout<Int>.size)
     }
@@ -221,12 +240,10 @@ final class Renderer {
 
         if inputBuffer == nil {
             guard let buffer = device.makeBuffer(length: 2*MemoryLayout<Float>.size+MemoryLayout<Int>.size, options: []) else { fatalError("Couldn't create input buffer") }
-
             inputBuffer = buffer
         }
 
         if vertexBuffer == nil {
-
             let vertexData = model.serializedVertexData
             let dataSize = vertexData.count * MemoryLayout<Float>.size
 
