@@ -15,18 +15,15 @@ import CoreGraphics
 // - TODO: cleanup code.
 
 final class Renderer {
-    private var vertexBuffer: MTLBuffer?
     private var uniformBuffer: MTLBuffer?
     private var inputBuffer: MTLBuffer?
     private var vertexIndexBuffer: MTLBuffer?
 
     private var currentDrawable: CAMetalDrawable?
     private var renderingPipeline: RenderingPipeline
-    private var model: Model
 
     private var perspectiveMatrix: simd_float4x4
     private var lightMatrix: simd_float4x4
-    private let inputTexture:MTLTexture
     private let computedPositions:MTLTexture // positions textures
     private let computedNormals: MTLTexture
     private var depthTexture: MTLTexture!
@@ -45,9 +42,15 @@ final class Renderer {
         return lightModelMatrix.transpose
     }
     
+    fileprivate var vertexIndicies: [Int32] = []
+    
+    // should correspond to the #defines in shader
+    fileprivate let modelWidth = 75
+    fileprivate let modelHeight = 75
+    
     init(inputManager: InputManager) {
         self.inputManager = inputManager
-        model = Model()
+        
         renderingPipeline = RenderingPipeline()
 
         perspectiveMatrix = MatrixUtils.matrix_perspective(aspect: 1, fovy: 90.0, near: 0.1, far: 100)
@@ -56,15 +59,9 @@ final class Renderer {
         let ortho = MatrixUtils.matrix_ortho(left: -1, right: 1, bottom: -1, top: 1, near: 1, far: -1)
         let lightView = MatrixUtils.matrix_lookat(at: simd_float3(0,0,0), eye: simd_float3(0,0,-1), up: simd_float3(0,1,0))
         lightMatrix = ortho * lightView
-        
-        inputTexture = renderingPipeline.makeInputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
-        
-        var kernelData = model.serializedVertexDataForCompute
-        
-        inputTexture.replace(region: MTLRegionMake2D(0, 0, model.columns, model.rows), mipmapLevel: 0, withBytes: &kernelData, bytesPerRow: 4*MemoryLayout<Float32>.size*model.columns)
-        
-        computedNormals = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
-        computedPositions = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: model.columns, height: model.rows)
+
+        computedNormals = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: modelWidth, height: modelHeight)
+        computedPositions = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: modelWidth, height: modelHeight)
     }
     
     func setInputManager(_ inputManager: InputManager) {
@@ -93,16 +90,15 @@ final class Renderer {
         let computePositionsPipelineState = renderingPipeline.createKernelPipelineState("compute_positions")
 
         computePositionsPassEncoder.setComputePipelineState(computePositionsPipelineState)
-        computePositionsPassEncoder.setTexture(inputTexture, index: 0)
-        computePositionsPassEncoder.setTexture(computedPositions, index: 1)
+        computePositionsPassEncoder.setTexture(computedPositions, index: 0)
         computePositionsPassEncoder.setBuffer(inputBuffer, offset: 0, index: 0)
 
         let w = computePositionsPipelineState.threadExecutionWidth
         let h = computePositionsPipelineState.maxTotalThreadsPerThreadgroup / w
         let threadsPerThreadgroup = MTLSize(width: w, height: h, depth: 1)
         
-        let threadgroupsPerGrid = MTLSize(width: (model.columns + w - 1) / w,
-                                                  height: (model.rows + h - 1) / h,
+        let threadgroupsPerGrid = MTLSize(width: (modelWidth + w - 1) / w,
+                                                  height: (modelHeight + h - 1) / h,
                                                   depth: 1)
         
         computePositionsPassEncoder.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
@@ -120,6 +116,7 @@ final class Renderer {
     
     private func shadowRenderPass(_ commandBuffer: MTLCommandBuffer, _ size: (width: Int, height: Int)) {
         // MARK: Depth Texture
+        /// - todo: this is not supported in simulator, perhaps not needed at all
         /*let msTextureDesc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .depth32Float, width: size.width, height: size.height, mipmapped: false)
         msTextureDesc.storageMode = .private
         msTextureDesc.mipmapLevelCount = 1
@@ -172,7 +169,7 @@ final class Renderer {
         renderEncoder.setVertexTexture(computedPositions, index: 0)
         renderEncoder.setVertexTexture(computedNormals, index: 1) // computed vertices / normals
 
-        renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: model.vertexIndicies.count/2)
+        renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: vertexIndicies.count/2)
         renderEncoder.popDebugGroup()
         renderEncoder.endEncoding()
     }
@@ -210,7 +207,7 @@ final class Renderer {
         
         renderEncoder.setFragmentTexture(depthTexture, index: 0)
 
-        renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: model.vertexIndicies.count/2)
+        renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: vertexIndicies.count/2)
         renderEncoder.popDebugGroup()
         renderEncoder.endEncoding()
     }
@@ -269,21 +266,47 @@ final class Renderer {
             inputBuffer = buffer
         }
 
-        if vertexBuffer == nil {
-            let vertexData = model.serializedVertexData
-            let dataSize = vertexData.count * MemoryLayout<Float>.size
-
-            guard let buffer = device.makeBuffer(bytes: vertexData, length: dataSize, options: []) else { fatalError("Couldn't create vertex buffer") }
-            vertexBuffer = buffer
-        }
-        
         if vertexIndexBuffer == nil {
-            let vertexIndicies = model.vertexIndicies
+            computeVertexIndicies()
             let dataSize = vertexIndicies.count * MemoryLayout<Int32>.size
             
             guard let buffer = device.makeBuffer(bytes: vertexIndicies, length: dataSize, options: []) else { fatalError("Couldn't create vertex index buffer") }
             
             vertexIndexBuffer = buffer
         }
+    }
+}
+
+// MARK: Utils
+extension Renderer {
+    fileprivate func computeVertexIndicies() {
+        for iiY in 1..<modelHeight-1 {
+            for iiX in 1..<modelWidth-1 {
+                let topIdx = iiY
+                let bottomIdx = iiY+1
+                let leftIdx = iiX
+                let rightIdx = iiX+1
+
+                let aIdx = (topIdx, leftIdx)
+                let bIdx = (bottomIdx, leftIdx)
+                let cIdx = (bottomIdx, rightIdx)
+                let dIdx = (topIdx, rightIdx)
+
+                var idxArr = [Int32]()
+                
+                idxArr.append(contentsOf: tupleToArray(tuple: aIdx));
+                idxArr.append(contentsOf: tupleToArray(tuple: bIdx));
+                idxArr.append(contentsOf: tupleToArray(tuple: cIdx));
+                idxArr.append(contentsOf: tupleToArray(tuple: aIdx));
+                idxArr.append(contentsOf: tupleToArray(tuple: cIdx));
+                idxArr.append(contentsOf: tupleToArray(tuple: dIdx));
+                
+                
+                vertexIndicies.append(contentsOf: idxArr)
+            }
+        }
+    }
+    @inline(__always) fileprivate func tupleToArray(tuple: (Int, Int)) -> [Int32] {
+        return [Int32(tuple.0), Int32(tuple.1)]
     }
 }

@@ -21,10 +21,8 @@
 		E5C4CEC2223BA7B90077B654 /* PageCurlTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C4CEC1223BA7B90077B654 /* PageCurlTests.swift */; };
 		E5C4CECE223BA7CD0077B654 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5C4CECD223BA7CD0077B654 /* Metal.framework */; };
 		E5C4CED0223BBBF40077B654 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = E5C4CECF223BBBF40077B654 /* Shaders.metal */; };
-		E5C75316223D0E3F004D46CA /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C75315223D0E3F004D46CA /* Model.swift */; };
 		E5C75319223D0F15004D46CA /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C75318223D0F15004D46CA /* Renderer.swift */; };
 		E5C7531B223D1207004D46CA /* RenderingDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C7531A223D1207004D46CA /* RenderingDevice.swift */; };
-		E5C7531D223D13AA004D46CA /* Vertex.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C7531C223D13AA004D46CA /* Vertex.swift */; };
 		E5C75322223D1BAE004D46CA /* RenderingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C75321223D1BAE004D46CA /* RenderingViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -57,10 +55,8 @@
 		E5C4CEC3223BA7B90077B654 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E5C4CECD223BA7CD0077B654 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		E5C4CECF223BBBF40077B654 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
-		E5C75315223D0E3F004D46CA /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		E5C75318223D0F15004D46CA /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
 		E5C7531A223D1207004D46CA /* RenderingDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingDevice.swift; sourceTree = "<group>"; };
-		E5C7531C223D13AA004D46CA /* Vertex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vertex.swift; sourceTree = "<group>"; };
 		E5C75321223D1BAE004D46CA /* RenderingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -149,8 +145,6 @@
 			children = (
 				E541784924C01DD5000040B8 /* Input Manager */,
 				E5C75320223D1B84004D46CA /* Rendering */,
-				E5C75315223D0E3F004D46CA /* Model.swift */,
-				E5C7531C223D13AA004D46CA /* Vertex.swift */,
 				E5AB191F22725A17007521F5 /* MatrixUtils.swift */,
 			);
 			path = Core;
@@ -277,8 +271,6 @@
 				E5C75319223D0F15004D46CA /* Renderer.swift in Sources */,
 				E541784B24C01DF1000040B8 /* RenderingTestInputManager.swift in Sources */,
 				E518896C22703D2B00D2541C /* ComputeKernel.metal in Sources */,
-				E5C7531D223D13AA004D46CA /* Vertex.swift in Sources */,
-				E5C75316223D0E3F004D46CA /* Model.swift in Sources */,
 				E5A98933226F04BD00A13B34 /* RenderingPipeline.swift in Sources */,
 				E5AB192022725A17007521F5 /* MatrixUtils.swift in Sources */,
 				E568AB0D25BF0F89003C34CA /* InputManager.swift in Sources */,

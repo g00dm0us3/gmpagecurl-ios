@@ -19,6 +19,9 @@
 #define NDT_MAX_COORD 1
 #define NDT_MIN_COORD -1
 
+#define MODEL_WIDTH 75.0f
+#define MODEL_HEIGHT 75.0f
+
 using namespace metal;
 
 typedef struct
@@ -186,17 +189,20 @@ inline float4 calculate_position(packed_float3 position, float phi, float xCoord
     return float4(axisToBoxVec, 1);
 }
 
-kernel void compute_positions(const texture2d<float> vertices [[texture(0)]],
-                              texture2d<float, access::write> transformed [[texture(1)]],
+kernel void compute_positions(texture2d<float, access::write> transformed [[texture(0)]],
                               constant Input &input[[buffer(0)]],
                               uint2 tid [[thread_position_in_grid]])
 {
-    if (tid.x >= vertices.get_width() || tid.y >= vertices.get_height()) {
+    if (tid.x > MODEL_WIDTH || tid.y > MODEL_HEIGHT) {
         return;
     }
 
-    float4 input_vertex = vertices.read(tid.xy); // - todo: this doesn't change, no need to pass it from anywhere
-    float3 position = packed_float3(input_vertex.x, input_vertex.y, input_vertex.z);
+    float stepX = 2 / MODEL_WIDTH;
+    float stepY = 2 / MODEL_HEIGHT;
+    float  x = -1 + tid.x*stepX;
+    float  y = -1 + tid.y*stepY;
+    
+    float3 position = packed_float3(x, y, 0);
     
     float4 pos = calculate_position(position, input.phi, input.xCoord, input.state);
     
