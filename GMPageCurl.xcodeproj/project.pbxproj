@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		E514A5A224BF0AD800ED988D /* RenderingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E514A5A124BF0AD800ED988D /* RenderingView.swift */; };
-		E518896C22703D2B00D2541C /* ComputeKernel.metal in Sources */ = {isa = PBXBuildFile; fileRef = E518896B22703D2B00D2541C /* ComputeKernel.metal */; };
 		E541784B24C01DF1000040B8 /* RenderingTestInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E541784A24C01DF1000040B8 /* RenderingTestInputManager.swift */; };
 		E568AB0D25BF0F89003C34CA /* InputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E568AB0C25BF0F89003C34CA /* InputManager.swift */; };
 		E5A98933226F04BD00A13B34 /* RenderingPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5A98932226F04BD00A13B34 /* RenderingPipeline.swift */; };
@@ -38,7 +37,6 @@
 
 /* Begin PBXFileReference section */
 		E514A5A124BF0AD800ED988D /* RenderingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingView.swift; sourceTree = "<group>"; };
-		E518896B22703D2B00D2541C /* ComputeKernel.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ComputeKernel.metal; sourceTree = "<group>"; };
 		E541784A24C01DF1000040B8 /* RenderingTestInputManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingTestInputManager.swift; sourceTree = "<group>"; };
 		E568AB0C25BF0F89003C34CA /* InputManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputManager.swift; sourceTree = "<group>"; };
 		E5A98932226F04BD00A13B34 /* RenderingPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingPipeline.swift; sourceTree = "<group>"; };
@@ -118,7 +116,6 @@
 				E5C4CEB3223BA7B90077B654 /* Assets.xcassets */,
 				E5C4CEB5223BA7B90077B654 /* LaunchScreen.storyboard */,
 				E5C4CEB8223BA7B90077B654 /* Info.plist */,
-				E518896B22703D2B00D2541C /* ComputeKernel.metal */,
 			);
 			path = GMPageCurl;
 			sourceTree = "<group>";
@@ -270,7 +267,6 @@
 				E5C75322223D1BAE004D46CA /* RenderingViewController.swift in Sources */,
 				E5C75319223D0F15004D46CA /* Renderer.swift in Sources */,
 				E541784B24C01DF1000040B8 /* RenderingTestInputManager.swift in Sources */,
-				E518896C22703D2B00D2541C /* ComputeKernel.metal in Sources */,
 				E5A98933226F04BD00A13B34 /* RenderingPipeline.swift in Sources */,
 				E5AB192022725A17007521F5 /* MatrixUtils.swift in Sources */,
 				E568AB0D25BF0F89003C34CA /* InputManager.swift in Sources */,
