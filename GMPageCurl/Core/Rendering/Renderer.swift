@@ -120,18 +120,31 @@ final class Renderer {
     
     private func shadowRenderPass(_ commandBuffer: MTLCommandBuffer, _ size: (width: Int, height: Int)) {
         // MARK: Depth Texture
-        let depthtextureDesc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .depth32Float, width: size.width, height: size.height, mipmapped: false)
-        depthtextureDesc.storageMode = .private
-        depthtextureDesc.usage = [.shaderRead, .renderTarget]
-        depthTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: depthtextureDesc)
+        /*let msTextureDesc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .depth32Float, width: size.width, height: size.height, mipmapped: false)
+        msTextureDesc.storageMode = .private
+        msTextureDesc.mipmapLevelCount = 1
+        msTextureDesc.textureType = .type2DMultisample
+        msTextureDesc.sampleCount = 4
+        msTextureDesc.usage = [.renderTarget]
+        let msTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: msTextureDesc)*/
         
         // MARK: Setup Render Pass Descriptor
         let renderPassDescriptor = MTLRenderPassDescriptor()
         
         let depthAttachemntDescriptor = MTLRenderPassDepthAttachmentDescriptor()
         
+        let regularTextureDesc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .depth32Float, width: size.width, height: size.height, mipmapped: false)
+        regularTextureDesc.storageMode = .private
+        regularTextureDesc.mipmapLevelCount = 1
+        regularTextureDesc.textureType = .type2D
+        regularTextureDesc.usage = [.shaderRead, .renderTarget]
+        depthTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: regularTextureDesc)
+        
+        //depthAttachemntDescriptor.resolveTexture = depthTexture
+        //depthAttachemntDescriptor.texture = msTexture
         depthAttachemntDescriptor.texture = depthTexture
         depthAttachemntDescriptor.loadAction = .clear
+        //depthAttachemntDescriptor.storeAction = .multisampleResolve // not available in simulator
         depthAttachemntDescriptor.storeAction = .store
         depthAttachemntDescriptor.clearDepth = 1
         
@@ -166,9 +179,22 @@ final class Renderer {
     
     private func colorRenderPass(_ commandBuffer: MTLCommandBuffer, _ drawable: CAMetalDrawable) {
         // MARK: Start Color Pass
-        let renderPassDescriptor = renderingPipeline.renderPassDescriptor()
+        let renderPassDescriptor = MTLRenderPassDescriptor() // a group of rendering targets
         
-        renderPassDescriptor.colorAttachments[0].texture = drawable.texture
+        renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadAction.clear
+        renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(1, 1, 1, 1)
+        renderPassDescriptor.colorAttachments[0].storeAction = MTLStoreAction.multisampleResolve
+        
+        let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: drawable.texture.width, height: drawable.texture.height, mipmapped: false)
+        textureDescriptor.textureType = .type2DMultisample
+        textureDescriptor.sampleCount = 4
+        textureDescriptor.storageMode = .memoryless
+        textureDescriptor.usage = .renderTarget
+        let msTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: textureDescriptor)
+        
+        renderPassDescriptor.colorAttachments[0].texture = msTexture
+        renderPassDescriptor.colorAttachments[0].resolveTexture = drawable.texture
+        //renderPassDescriptor.colorAttachments[0].texture = drawable.texture
         let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor)!
         
         renderEncoder.pushDebugGroup("COLOR")

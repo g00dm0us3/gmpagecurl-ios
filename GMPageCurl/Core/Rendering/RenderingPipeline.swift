@@ -32,9 +32,10 @@ final class RenderingPipeline {
 
     public func renderPassDescriptor() -> MTLRenderPassDescriptor {
         let renderPassDscriptor = MTLRenderPassDescriptor()
+        
         renderPassDscriptor.colorAttachments[0].loadAction = MTLLoadAction.clear
         renderPassDscriptor.colorAttachments[0].clearColor = MTLClearColorMake(1, 1, 1, 1)
-        renderPassDscriptor.colorAttachments[0].storeAction = MTLStoreAction.store
+        renderPassDscriptor.colorAttachments[0].storeAction = MTLStoreAction.multisampleResolve
 
         return renderPassDscriptor
     }
@@ -83,6 +84,8 @@ final class RenderingPipeline {
         let pipelineStateDescriptor = MTLRenderPipelineDescriptor()
         pipelineStateDescriptor.vertexFunction = vertexProgram
         pipelineStateDescriptor.fragmentFunction = fragmentProgram
+        
+        pipelineStateDescriptor.sampleCount = 4
 
         pipelineStateDescriptor.depthAttachmentPixelFormat = .invalid
         pipelineStateDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.bgra8Unorm
@@ -96,6 +99,7 @@ final class RenderingPipeline {
         let pipelineStateDescriptor = MTLRenderPipelineDescriptor()
         pipelineStateDescriptor.vertexFunction = vertexProgram
         pipelineStateDescriptor.fragmentFunction = nil
+        //pipelineStateDescriptor.sampleCount = 4 // - resolving is not supported in simulator
 
         pipelineStateDescriptor.depthAttachmentPixelFormat = .depth32Float
         pipelineStateDescriptor.colorAttachments[0].pixelFormat = .invalid
