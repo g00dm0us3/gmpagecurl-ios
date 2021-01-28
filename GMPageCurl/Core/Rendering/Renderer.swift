@@ -53,7 +53,7 @@ final class Renderer {
         
         renderingPipeline = RenderingPipeline()
 
-        perspectiveMatrix = MatrixUtils.matrix_perspective(aspect: 0.75, fovy: 90.0, near: 0.1, far: 100)
+        perspectiveMatrix = MatrixUtils.matrix_perspective(aspect: 1, fovy: 90.0, near: 0.1, far: 100)
         
         
         let ortho = MatrixUtils.matrix_ortho(left: -1, right: 1, bottom: -1, top: 1, near: 1, far: -1)
@@ -114,6 +114,8 @@ final class Renderer {
         computePositionsPassEncoder.popDebugGroup()
     }
     
+    
+    /// - TODO: create all the shit we need before launching first pass. this will get rid of EXC_BAD_ACCESS here and there
     private func shadowRenderPass(_ commandBuffer: MTLCommandBuffer, _ size: (width: Int, height: Int)) {
         // MARK: Depth Texture
         /// - todo: this is not supported in simulator, perhaps not needed at all
@@ -180,23 +182,51 @@ final class Renderer {
         
         renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadAction.clear
         renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(1, 1, 1, 1)
-        renderPassDescriptor.colorAttachments[0].storeAction = MTLStoreAction.multisampleResolve
+        //renderPassDescriptor.colorAttachments[0].storeAction = MTLStoreAction.multisampleResolve
+        renderPassDescriptor.colorAttachments[0].storeAction = .store
         
         let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: drawable.texture.width, height: drawable.texture.height, mipmapped: false)
         textureDescriptor.textureType = .type2DMultisample
         textureDescriptor.sampleCount = 4
         textureDescriptor.storageMode = .memoryless
         textureDescriptor.usage = .renderTarget
+        // add code detecting when we are in simulator. depth testing w. MSAA is not supported in simulator.
         let msTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: textureDescriptor)
         
-        renderPassDescriptor.colorAttachments[0].texture = msTexture
-        renderPassDescriptor.colorAttachments[0].resolveTexture = drawable.texture
-        //renderPassDescriptor.colorAttachments[0].texture = drawable.texture
+        let depthAttachemntDescriptor = MTLRenderPassDepthAttachmentDescriptor()
+        
+        let regularTextureDesc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .depth32Float, width: drawable.texture.width, height: drawable.texture.height, mipmapped: false)
+        regularTextureDesc.storageMode = .private
+        regularTextureDesc.mipmapLevelCount = 1
+        regularTextureDesc.textureType = .type2D
+        regularTextureDesc.usage = [.shaderRead, .renderTarget]
+        depthTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: regularTextureDesc)
+        
+        //depthAttachemntDescriptor.resolveTexture = depthTexture
+        //depthAttachemntDescriptor.texture = msTexture
+        depthAttachemntDescriptor.texture = depthTexture
+        depthAttachemntDescriptor.loadAction = .clear
+        //depthAttachemntDescriptor.storeAction = .multisampleResolve // not available in simulator
+        depthAttachemntDescriptor.storeAction = .store
+        depthAttachemntDescriptor.clearDepth = 1
+        
+        renderPassDescriptor.depthAttachment = depthAttachemntDescriptor
+        
+        //renderPassDescriptor.colorAttachments[0].texture = msTexture
+        //renderPassDescriptor.colorAttachments[0].resolveTexture = drawable.texture
+        renderPassDescriptor.colorAttachments[0].texture = drawable.texture
+        
+        let depthDescriptor = MTLDepthStencilDescriptor()
+        depthDescriptor.depthCompareFunction = .lessEqual
+        depthDescriptor.isDepthWriteEnabled = true
+        guard let depthState = RenderingDevice.defaultDevice.makeDepthStencilState(descriptor: depthDescriptor) else { fatalError("Cannot make depth texture, yo") }
+        
         let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor)!
         
         renderEncoder.pushDebugGroup("COLOR")
         renderEncoder.label = "CL"
         
+        renderEncoder.setDepthStencilState(depthState)
         renderEncoder.setRenderPipelineState(renderingPipeline.colorPipelineState!) // - TODO: what in the actual fuck?!
         
         renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 0)
@@ -207,7 +237,7 @@ final class Renderer {
         
         renderEncoder.setFragmentTexture(depthTexture, index: 0)
 
-        renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: vertexIndicies.count/2)
+        renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: vertexIndicies.count / 2)
         renderEncoder.popDebugGroup()
         renderEncoder.endEncoding()
     }
@@ -287,12 +317,20 @@ extension Renderer {
                 let bottomIdx = Int32(iiY+1)
                 let rightIdx = Int32(iiX+1)
 
-                vertexIndicies.append(contentsOf: [leftIdx, topIdx]);
+                vertexIndicies.append(contentsOf: [leftIdx, topIdx])
+                vertexIndicies.append(contentsOf: [rightIdx, topIdx])
+                vertexIndicies.append(contentsOf: [rightIdx, bottomIdx])
+                
+                vertexIndicies.append(contentsOf: [leftIdx, topIdx])
                 vertexIndicies.append(contentsOf: [leftIdx, bottomIdx])
                 vertexIndicies.append(contentsOf: [rightIdx, bottomIdx])
-                vertexIndicies.append(contentsOf: [leftIdx, topIdx])
-                vertexIndicies.append(contentsOf: [rightIdx, bottomIdx])
-                vertexIndicies.append(contentsOf: [rightIdx, topIdx])
+                
+                /*vertexIndicies.append(contentsOf: [topIdx, leftIdx]);
+                vertexIndicies.append(contentsOf: [bottomIdx, leftIdx])
+                vertexIndicies.append(contentsOf: [bottomIdx, rightIdx])
+                vertexIndicies.append(contentsOf: [topIdx, leftIdx])
+                vertexIndicies.append(contentsOf: [bottomIdx, rightIdx])
+                vertexIndicies.append(contentsOf: [topIdx, rightIdx])*/
             }
         }
     }

@@ -32,7 +32,7 @@ typedef struct
 
 typedef struct
 {
-    int2 tex_coords;
+    int2 coords;
 } VertexIndex;
 
 typedef struct {
@@ -131,7 +131,6 @@ inline float2 get_point_on_inflection_border(float2 pointOnPlane, float phi, flo
 */
 
 inline float4 calculate_position(packed_float3 position, float phi, float xCoord, int viewState) {
-    //return float4(position.xyz,1);
     xCoord = NDT_MAX_COORD - xCoord; // conversion to the Metal coordinate system
     if (xCoord == NDT_MAX_COORD || !should_transform(position, phi, xCoord)) { return float4(position.xyz,1); }
     
@@ -196,7 +195,7 @@ kernel void compute_positions(texture2d<float, access::write> transformed [[text
     if (tid.x > MODEL_WIDTH || tid.y > MODEL_HEIGHT) {
         return;
     }
-
+    
     float stepX = 2 / MODEL_WIDTH;
     float stepY = 2 / MODEL_HEIGHT;
     float  x = -1 + tid.x*stepX;
@@ -251,6 +250,7 @@ kernel void compute_normals(const texture2d<float> vertices [[texture(0)]],
     n = normalize(n);
 
     normals.write(float4(float3(point.x, point.y, n.z), 1), tid);
+    //normals.write(float4(float3(point.x, point.y, 1), 1), tid);
 }
 
 vertex VertexOut vertex_function(texture2d<float> tex_vertices [[texture(0)]],
@@ -261,7 +261,7 @@ vertex VertexOut vertex_function(texture2d<float> tex_vertices [[texture(0)]],
 {
     VertexOut out;
 
-    uint2 tex_coord = uint2(tex_indicies[vid].tex_coords.xy);
+    uint2 tex_coord = uint2(tex_indicies[vid].coords.x, tex_indicies[vid].coords.y);
     float3 position = packed_float3(tex_vertices.read(tex_coord).xyz);
 
     float4 pos = float4(position.xyz, 1);
@@ -287,7 +287,7 @@ float calculate_shadow(float4 fragment_in_light_space, depth2d<float> depth) {
     float val = depth.sample(texSampler, xy);
     
     float b = 0.007;
-    float shadow = xyz.z - b > val ? 0.5 : 0.0;
+    float shadow = xyz.z - b > val ? 0.5 : 0;
     
     return shadow;
 }
@@ -297,12 +297,12 @@ fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> dept
 {
     float3 normal = normalize(in.normal);
     
-    float3 light_pos = float3(0,0,0.9);
+    float3 light_pos = float3(0.3,0.3,1);
     
     /// @note: this happens, if there is a roof (normal points downward from there, dot < 0, roof is rendered pitch black)
     float3 light_color = float3(1,1,1);
     if (dot(normal, light_pos) < 0) {
-        normal = -normal;
+        normal = float3(normal.x, normal.y, -normal.z);
         light_color = float3(0.9, 0.8, 0.8);
     }
 
@@ -312,7 +312,9 @@ fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> dept
 
     float val = calculate_shadow(in.fragment_in_light_space, depth);
     
+    /// - todo: clamp it so, that pitch black is no longer a valid color,  but the top is not above any of the two (light_color / and wtv.)
     return float4((1-val)*diffuse, 1);
+    //return float4(light_color,1);
 }
 
 vertex float4 vertex_pos_only(texture2d<float> tex_vertices [[texture(0)]],
@@ -321,7 +323,7 @@ vertex float4 vertex_pos_only(texture2d<float> tex_vertices [[texture(0)]],
                                  constant VertexIndex *tex_indicies [[buffer(1)]],
                                  uint vid [[vertex_id]])
 {
-    uint2 tex_coord = uint2(tex_indicies[vid].tex_coords.xy);
+    uint2 tex_coord = uint2(tex_indicies[vid].coords.xy);
     float3 position = packed_float3(tex_vertices.read(tex_coord).xyz);
 
     float4 pos = float4(position.xyz, 1);

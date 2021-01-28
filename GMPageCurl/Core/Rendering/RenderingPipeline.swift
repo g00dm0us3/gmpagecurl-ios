@@ -85,9 +85,9 @@ final class RenderingPipeline {
         pipelineStateDescriptor.vertexFunction = vertexProgram
         pipelineStateDescriptor.fragmentFunction = fragmentProgram
         
-        pipelineStateDescriptor.sampleCount = 4
+        //pipelineStateDescriptor.sampleCount = 4
 
-        pipelineStateDescriptor.depthAttachmentPixelFormat = .invalid
+        pipelineStateDescriptor.depthAttachmentPixelFormat = .depth32Float
         pipelineStateDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.bgra8Unorm
 
         return try device.makeRenderPipelineState(descriptor: pipelineStateDescriptor)
