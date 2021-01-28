@@ -20,7 +20,7 @@
 #define NDT_MIN_COORD -1
 
 #define MODEL_WIDTH 75.0f
-#define MODEL_HEIGHT 75.0f
+#define MODEL_HEIGHT 100.0f
 
 using namespace metal;
 

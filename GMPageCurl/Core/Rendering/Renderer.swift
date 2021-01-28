@@ -46,14 +46,14 @@ final class Renderer {
     
     // should correspond to the #defines in shader
     fileprivate let modelWidth = 75
-    fileprivate let modelHeight = 75
+    fileprivate let modelHeight = 100
     
     init(inputManager: InputManager) {
         self.inputManager = inputManager
         
         renderingPipeline = RenderingPipeline()
 
-        perspectiveMatrix = MatrixUtils.matrix_perspective(aspect: 1, fovy: 90.0, near: 0.1, far: 100)
+        perspectiveMatrix = MatrixUtils.matrix_perspective(aspect: 0.75, fovy: 90.0, near: 0.1, far: 100)
         
         
         let ortho = MatrixUtils.matrix_ortho(left: -1, right: 1, bottom: -1, top: 1, near: 1, far: -1)
@@ -280,33 +280,20 @@ final class Renderer {
 // MARK: Utils
 extension Renderer {
     fileprivate func computeVertexIndicies() {
-        for iiY in 1..<modelHeight-1 {
-            for iiX in 1..<modelWidth-1 {
-                let topIdx = iiY
-                let bottomIdx = iiY+1
-                let leftIdx = iiX
-                let rightIdx = iiX+1
+        for iiY in 0..<modelHeight-1 {
+            for iiX in 0..<modelWidth-1 {
+                let topIdx = Int32(iiY)
+                let leftIdx = Int32(iiX)
+                let bottomIdx = Int32(iiY+1)
+                let rightIdx = Int32(iiX+1)
 
-                let aIdx = (topIdx, leftIdx)
-                let bIdx = (bottomIdx, leftIdx)
-                let cIdx = (bottomIdx, rightIdx)
-                let dIdx = (topIdx, rightIdx)
-
-                var idxArr = [Int32]()
-                
-                idxArr.append(contentsOf: tupleToArray(tuple: aIdx));
-                idxArr.append(contentsOf: tupleToArray(tuple: bIdx));
-                idxArr.append(contentsOf: tupleToArray(tuple: cIdx));
-                idxArr.append(contentsOf: tupleToArray(tuple: aIdx));
-                idxArr.append(contentsOf: tupleToArray(tuple: cIdx));
-                idxArr.append(contentsOf: tupleToArray(tuple: dIdx));
-                
-                
-                vertexIndicies.append(contentsOf: idxArr)
+                vertexIndicies.append(contentsOf: [leftIdx, topIdx]);
+                vertexIndicies.append(contentsOf: [leftIdx, bottomIdx])
+                vertexIndicies.append(contentsOf: [rightIdx, bottomIdx])
+                vertexIndicies.append(contentsOf: [leftIdx, topIdx])
+                vertexIndicies.append(contentsOf: [rightIdx, bottomIdx])
+                vertexIndicies.append(contentsOf: [rightIdx, topIdx])
             }
         }
-    }
-    @inline(__always) fileprivate func tupleToArray(tuple: (Int, Int)) -> [Int32] {
-        return [Int32(tuple.0), Int32(tuple.1)]
     }
 }

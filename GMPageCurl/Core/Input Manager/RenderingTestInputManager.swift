@@ -15,7 +15,7 @@ final class RenderingTestInputManager: InputManager {
     var renderingViewState: RenderViewStates = .cylinder
     
     var worldMatrix: simd_float4x4 {
-        let translation = MatrixUtils.matrix4x4Translate(t: simd_float3(arrayLiteral: 0, 0, -1.001))
+        let translation = MatrixUtils.matrix4x4Translate(t: simd_float3(arrayLiteral: 0, 0, -1.01))
         let scaleMatrix = MatrixUtils.matrix4x4Scale(scale: simd_float3(arrayLiteral: scale, scale, scale))
 
         let rotationMatrixX = MatrixUtils.matrix4x4RotateAroundX(theta: thetaY)
@@ -72,8 +72,8 @@ final class RenderingTestInputManager: InputManager {
     }
 
     init() {
-        /*radius = 0.2*3.141
-        phi = RenderingTestInputManager.degree2rad(degree:20)*/
+        radius = 0.8
+        //phi = RenderingTestInputManager.degree2rad(degree:20)
     }
     
     /**
