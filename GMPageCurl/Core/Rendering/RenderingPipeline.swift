@@ -13,17 +13,10 @@ import UIKit
 final class RenderingPipeline {
     private var device: MTLDevice
     private var commandQueue: MTLCommandQueue!
-    private var defaultLibrary: MTLLibrary!
-
-    //pipeline states
-    private(set) var colorPipelineState: MTLRenderPipelineState?
 
     init() {
         device = RenderingDevice.defaultDevice
         commandQueue = device.makeCommandQueue()
-        defaultLibrary = device.makeDefaultLibrary()
-
-        colorPipelineState = try! initColorPipelineState()
     }
 
     public func getCommandBuffer() -> MTLCommandBuffer {
@@ -39,20 +32,7 @@ final class RenderingPipeline {
 
         return renderPassDscriptor
     }
-    
-    public func createKernelPipelineState(_ kernelFunctionName: String) -> MTLComputePipelineState {
-        let pipelineStateDescriptor = MTLComputePipelineDescriptor()
-        
-        pipelineStateDescriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = true
-        pipelineStateDescriptor.computeFunction = self.defaultLibrary.makeFunction(name: kernelFunctionName)
-        
-        do {
-            return try device.makeComputePipelineState(descriptor: pipelineStateDescriptor, options: MTLPipelineOption(rawValue: 0), reflection: nil)
-        } catch {
-            fatalError("Cannot create kernel function")
-        }
-    }
-    
+
     public func makeInputComputeTexture(pixelFormat: MTLPixelFormat, width: Int, height: Int) -> MTLTexture
     {
         let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: pixelFormat, width: width, height: height, mipmapped: false)
@@ -75,35 +55,5 @@ final class RenderingPipeline {
         guard let texture = device.makeTexture(descriptor: textureDescriptor) else { fatalError("Couldn't create texture")}
         
         return texture
-    }
-    
-    private func initColorPipelineState() throws -> MTLRenderPipelineState {
-        let vertexProgram = defaultLibrary.makeFunction(name: "vertex_function")
-        let fragmentProgram = defaultLibrary.makeFunction(name: "fragment_function")
-
-        let pipelineStateDescriptor = MTLRenderPipelineDescriptor()
-        pipelineStateDescriptor.vertexFunction = vertexProgram
-        pipelineStateDescriptor.fragmentFunction = fragmentProgram
-        
-        //pipelineStateDescriptor.sampleCount = 4
-
-        pipelineStateDescriptor.depthAttachmentPixelFormat = .depth32Float
-        pipelineStateDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.bgra8Unorm
-
-        return try device.makeRenderPipelineState(descriptor: pipelineStateDescriptor)
-    }
-    
-    func makeShadowPipelineState() throws -> MTLRenderPipelineState {
-        let vertexProgram = defaultLibrary.makeFunction(name: "vertex_pos_only")
-
-        let pipelineStateDescriptor = MTLRenderPipelineDescriptor()
-        pipelineStateDescriptor.vertexFunction = vertexProgram
-        pipelineStateDescriptor.fragmentFunction = nil
-        //pipelineStateDescriptor.sampleCount = 4 // - resolving is not supported in simulator
-
-        pipelineStateDescriptor.depthAttachmentPixelFormat = .depth32Float
-        pipelineStateDescriptor.colorAttachments[0].pixelFormat = .invalid
-
-        return try device.makeRenderPipelineState(descriptor: pipelineStateDescriptor)
     }
 }

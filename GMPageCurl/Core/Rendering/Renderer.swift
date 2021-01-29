@@ -48,6 +48,13 @@ final class Renderer {
     fileprivate let modelWidth = 75
     fileprivate let modelHeight = 100
     
+    private var defaultLibrary: MTLLibrary!
+    private var device: MTLDevice {
+        return RenderingDevice.defaultDevice
+    }
+    
+    private let state = RendererState(RenderingDevice.defaultDevice)
+    
     init(inputManager: InputManager) {
         self.inputManager = inputManager
         
@@ -62,6 +69,8 @@ final class Renderer {
 
         computedNormals = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: modelWidth, height: modelHeight)
         computedPositions = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: modelWidth, height: modelHeight)
+        
+        defaultLibrary = device.makeDefaultLibrary()
     }
     
     func setInputManager(_ inputManager: InputManager) {
@@ -87,7 +96,8 @@ final class Renderer {
         let computePositionsPassEncoder = commandBuffer.makeComputeCommandEncoder()!
         
         computePositionsPassEncoder.pushDebugGroup("COMPUTE POSITIONS")
-        let computePositionsPipelineState = renderingPipeline.createKernelPipelineState("compute_positions")
+        let computePositionsPipelineState = state.computePositionsPipelineState!
+        let computeNormalsPipelineState = state.computeNormalsPipelineState!
 
         computePositionsPassEncoder.setComputePipelineState(computePositionsPipelineState)
         computePositionsPassEncoder.setTexture(computedPositions, index: 0)
@@ -103,7 +113,7 @@ final class Renderer {
         
         computePositionsPassEncoder.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
         
-        let computeNormalsPipelineState = renderingPipeline.createKernelPipelineState("compute_normals")
+       
         computePositionsPassEncoder.setComputePipelineState(computeNormalsPipelineState)
         computePositionsPassEncoder.setTexture(computedPositions, index: 0)
         computePositionsPassEncoder.setTexture(computedNormals, index: 1)
@@ -117,16 +127,6 @@ final class Renderer {
     
     /// - TODO: create all the shit we need before launching first pass. this will get rid of EXC_BAD_ACCESS here and there
     private func shadowRenderPass(_ commandBuffer: MTLCommandBuffer, _ size: (width: Int, height: Int)) {
-        // MARK: Depth Texture
-        /// - todo: this is not supported in simulator, perhaps not needed at all
-        /*let msTextureDesc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .depth32Float, width: size.width, height: size.height, mipmapped: false)
-        msTextureDesc.storageMode = .private
-        msTextureDesc.mipmapLevelCount = 1
-        msTextureDesc.textureType = .type2DMultisample
-        msTextureDesc.sampleCount = 4
-        msTextureDesc.usage = [.renderTarget]
-        let msTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: msTextureDesc)*/
-        
         // MARK: Setup Render Pass Descriptor
         let renderPassDescriptor = MTLRenderPassDescriptor()
         
@@ -139,18 +139,15 @@ final class Renderer {
         regularTextureDesc.usage = [.shaderRead, .renderTarget]
         depthTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: regularTextureDesc)
         
-        //depthAttachemntDescriptor.resolveTexture = depthTexture
-        //depthAttachemntDescriptor.texture = msTexture
         depthAttachemntDescriptor.texture = depthTexture
         depthAttachemntDescriptor.loadAction = .clear
-        //depthAttachemntDescriptor.storeAction = .multisampleResolve // not available in simulator
         depthAttachemntDescriptor.storeAction = .store
         depthAttachemntDescriptor.clearDepth = 1
         
         renderPassDescriptor.depthAttachment = depthAttachemntDescriptor
         
         // MARK: Setup Render Pipeline State
-        let shadowPipelineState = try! renderingPipeline.makeShadowPipelineState()
+        let shadowPipelineState = state.shadowPipelineState!
         
         // MARK: Configure Depth on render pass
         let depthDescriptor = MTLDepthStencilDescriptor()
@@ -221,13 +218,14 @@ final class Renderer {
         depthDescriptor.isDepthWriteEnabled = true
         guard let depthState = RenderingDevice.defaultDevice.makeDepthStencilState(descriptor: depthDescriptor) else { fatalError("Cannot make depth texture, yo") }
         
+        let colorPipelineState = state.colorPipelineState!
         let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor)!
         
         renderEncoder.pushDebugGroup("COLOR")
         renderEncoder.label = "CL"
         
         renderEncoder.setDepthStencilState(depthState)
-        renderEncoder.setRenderPipelineState(renderingPipeline.colorPipelineState!) // - TODO: what in the actual fuck?!
+        renderEncoder.setRenderPipelineState(colorPipelineState)
         
         renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 0)
         renderEncoder.setVertexBuffer(vertexIndexBuffer, offset: 0, index: 1)
@@ -324,14 +322,77 @@ extension Renderer {
                 vertexIndicies.append(contentsOf: [leftIdx, topIdx])
                 vertexIndicies.append(contentsOf: [leftIdx, bottomIdx])
                 vertexIndicies.append(contentsOf: [rightIdx, bottomIdx])
-                
-                /*vertexIndicies.append(contentsOf: [topIdx, leftIdx]);
-                vertexIndicies.append(contentsOf: [bottomIdx, leftIdx])
-                vertexIndicies.append(contentsOf: [bottomIdx, rightIdx])
-                vertexIndicies.append(contentsOf: [topIdx, leftIdx])
-                vertexIndicies.append(contentsOf: [bottomIdx, rightIdx])
-                vertexIndicies.append(contentsOf: [topIdx, rightIdx])*/
             }
+        }
+    }
+}
+
+// MARK: Renderer State
+extension Renderer {
+    fileprivate final class RendererState {
+        
+        /// Reusable
+        
+        private(set) var computePositionsPipelineState: MTLComputePipelineState!
+        private(set) var computeNormalsPipelineState: MTLComputePipelineState!
+        
+        private(set) var shadowPipelineState: MTLRenderPipelineState!
+        private (set) var colorPipelineState: MTLRenderPipelineState!
+        
+        /// Private
+        
+        private var library: MTLLibrary
+        private var device: MTLDevice
+        
+        init(_ device: MTLDevice) {
+            self.device = device
+            library = device.makeDefaultLibrary()!
+            self.computePositionsPipelineState = createKernelPipelineState("compute_positions")
+            self.computeNormalsPipelineState = createKernelPipelineState("compute_normals")
+            self.shadowPipelineState = try! makeShadowPipelineState()
+            self.colorPipelineState = try! makeColorPipelineState()
+        }
+        
+        private func createKernelPipelineState(_ kernelFunctionName: String) -> MTLComputePipelineState {
+            let pipelineStateDescriptor = MTLComputePipelineDescriptor()
+            
+            pipelineStateDescriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = true
+            pipelineStateDescriptor.computeFunction = library.makeFunction(name: kernelFunctionName)
+            
+            do {
+                return try device.makeComputePipelineState(descriptor: pipelineStateDescriptor, options: MTLPipelineOption(rawValue: 0), reflection: nil)
+            } catch {
+                fatalError("Cannot create kernel function")
+            }
+        }
+        
+        private func makeShadowPipelineState() throws -> MTLRenderPipelineState {
+            let vertexProgram = library.makeFunction(name: "vertex_pos_only")
+
+            let pipelineStateDescriptor = MTLRenderPipelineDescriptor()
+            pipelineStateDescriptor.vertexFunction = vertexProgram
+            pipelineStateDescriptor.fragmentFunction = nil
+
+            pipelineStateDescriptor.depthAttachmentPixelFormat = .depth32Float
+            pipelineStateDescriptor.colorAttachments[0].pixelFormat = .invalid
+
+            return try device.makeRenderPipelineState(descriptor: pipelineStateDescriptor)
+        }
+        
+        private func makeColorPipelineState() throws -> MTLRenderPipelineState {
+            let vertexProgram = library.makeFunction(name: "vertex_function")
+            let fragmentProgram = library.makeFunction(name: "fragment_function")
+
+            let pipelineStateDescriptor = MTLRenderPipelineDescriptor()
+            pipelineStateDescriptor.vertexFunction = vertexProgram
+            pipelineStateDescriptor.fragmentFunction = fragmentProgram
+            
+            //pipelineStateDescriptor.sampleCount = 4
+
+            pipelineStateDescriptor.depthAttachmentPixelFormat = .depth32Float
+            pipelineStateDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.bgra8Unorm
+
+            return try device.makeRenderPipelineState(descriptor: pipelineStateDescriptor)
         }
     }
 }
