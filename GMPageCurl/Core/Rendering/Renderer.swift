@@ -26,7 +26,6 @@ final class Renderer {
     private var lightMatrix: simd_float4x4
     private let computedPositions:MTLTexture // positions textures
     private let computedNormals: MTLTexture
-    private var depthTexture: MTLTexture!
     
     private var inputManager: InputManager
     
@@ -79,10 +78,10 @@ final class Renderer {
     
     func render(in layer: CAMetalLayer) {
         fillBuffers()
-
-        let commandBuffer = renderingPipeline.getCommandBuffer()
-
         let drawable = self.drawable(from: layer)
+        state.buildTransientState(for: drawable)
+        
+        let commandBuffer = renderingPipeline.getCommandBuffer()
         
         computePositionsPass(commandBuffer)
         shadowRenderPass(commandBuffer, (drawable.texture.width, drawable.texture.height))
@@ -129,38 +128,16 @@ final class Renderer {
     private func shadowRenderPass(_ commandBuffer: MTLCommandBuffer, _ size: (width: Int, height: Int)) {
         // MARK: Setup Render Pass Descriptor
         let renderPassDescriptor = MTLRenderPassDescriptor()
-        
-        let depthAttachemntDescriptor = MTLRenderPassDepthAttachmentDescriptor()
-        
-        let regularTextureDesc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .depth32Float, width: size.width, height: size.height, mipmapped: false)
-        regularTextureDesc.storageMode = .private
-        regularTextureDesc.mipmapLevelCount = 1
-        regularTextureDesc.textureType = .type2D
-        regularTextureDesc.usage = [.shaderRead, .renderTarget]
-        depthTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: regularTextureDesc)
-        
-        depthAttachemntDescriptor.texture = depthTexture
-        depthAttachemntDescriptor.loadAction = .clear
-        depthAttachemntDescriptor.storeAction = .store
-        depthAttachemntDescriptor.clearDepth = 1
-        
-        renderPassDescriptor.depthAttachment = depthAttachemntDescriptor
+        renderPassDescriptor.depthAttachment = state.depthAttachemntDescriptor!
         
         // MARK: Setup Render Pipeline State
         let shadowPipelineState = state.shadowPipelineState!
-        
-        // MARK: Configure Depth on render pass
-        let depthDescriptor = MTLDepthStencilDescriptor()
-        depthDescriptor.depthCompareFunction = .lessEqual
-        depthDescriptor.isDepthWriteEnabled = true
-        guard let depthState = RenderingDevice.defaultDevice.makeDepthStencilState(descriptor: depthDescriptor) else { fatalError("Cannot make depth texture, yo") }
-        
         let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor)!
         renderEncoder.pushDebugGroup("SHADOW")
         
         // cull & front facing
         renderEncoder.setRenderPipelineState(shadowPipelineState)
-        renderEncoder.setDepthStencilState(depthState)
+        renderEncoder.setDepthStencilState(state.depthStencilStateForShadowPass!)
         
         renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 0)
         renderEncoder.setVertexBuffer(vertexIndexBuffer, offset: 0, index: 1)
@@ -197,7 +174,7 @@ final class Renderer {
         regularTextureDesc.mipmapLevelCount = 1
         regularTextureDesc.textureType = .type2D
         regularTextureDesc.usage = [.shaderRead, .renderTarget]
-        depthTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: regularTextureDesc)
+        let depthTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: regularTextureDesc)
         
         //depthAttachemntDescriptor.resolveTexture = depthTexture
         //depthAttachemntDescriptor.texture = msTexture
@@ -233,7 +210,7 @@ final class Renderer {
         renderEncoder.setVertexTexture(computedPositions, index: 0)
         renderEncoder.setVertexTexture(computedNormals, index: 1) // computed vertices / normals
         
-        renderEncoder.setFragmentTexture(depthTexture, index: 0)
+        renderEncoder.setFragmentTexture(state.depthTexture!, index: 0)
 
         renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: vertexIndicies.count / 2)
         renderEncoder.popDebugGroup()
@@ -337,12 +314,30 @@ extension Renderer {
         private(set) var computeNormalsPipelineState: MTLComputePipelineState!
         
         private(set) var shadowPipelineState: MTLRenderPipelineState!
-        private (set) var colorPipelineState: MTLRenderPipelineState!
+        private(set) var depthStencilStateForShadowPass: MTLDepthStencilState!
+        private(set) var colorPipelineState: MTLRenderPipelineState!
+        
+        private(set) var depthTexture: MTLTexture!
+        
+        /// Transient
+        
+        private(set) var depthAttachemntDescriptor: MTLRenderPassDepthAttachmentDescriptor!
         
         /// Private
         
         private var library: MTLLibrary
         private var device: MTLDevice
+        
+        private var didUpdateDrawableSize = false
+        private var innerDrawableSize: CGSize = .zero
+        private var drawableSize: CGSize {
+            get { return innerDrawableSize }
+            set {
+                guard newValue != innerDrawableSize else { return }
+                innerDrawableSize = newValue
+                didUpdateDrawableSize = true
+            }
+        }
         
         init(_ device: MTLDevice) {
             self.device = device
@@ -351,6 +346,39 @@ extension Renderer {
             self.computeNormalsPipelineState = createKernelPipelineState("compute_normals")
             self.shadowPipelineState = try! makeShadowPipelineState()
             self.colorPipelineState = try! makeColorPipelineState()
+            
+            let depthDescriptor = MTLDepthStencilDescriptor()
+            depthDescriptor.depthCompareFunction = .lessEqual
+            depthDescriptor.isDepthWriteEnabled = true
+            
+            depthStencilStateForShadowPass = RenderingDevice.defaultDevice.makeDepthStencilState(descriptor: depthDescriptor)
+        }
+        
+        func buildTransientState(for drawable: CAMetalDrawable) {
+            drawableSize = CGSize(width: drawable.texture.width, height: drawable.texture.height)
+            
+            depthAttachemntDescriptor = buildDepthAttachmentDescriptor()
+            didUpdateDrawableSize = false
+        }
+        
+        private func buildDepthAttachmentDescriptor() -> MTLRenderPassDepthAttachmentDescriptor {
+            let depthAttachemntDescriptor = MTLRenderPassDepthAttachmentDescriptor()
+            
+            if depthTexture == nil || didUpdateDrawableSize {
+                let regularTextureDesc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .depth32Float, width: Int(drawableSize.width), height: Int(drawableSize.height), mipmapped: false)
+                regularTextureDesc.storageMode = .private
+                regularTextureDesc.mipmapLevelCount = 1
+                regularTextureDesc.textureType = .type2D
+                regularTextureDesc.usage = [.shaderRead, .renderTarget]
+                depthTexture = device.makeTexture(descriptor: regularTextureDesc)
+            }
+            
+            depthAttachemntDescriptor.texture = depthTexture
+            depthAttachemntDescriptor.loadAction = .clear
+            depthAttachemntDescriptor.storeAction = .store
+            depthAttachemntDescriptor.clearDepth = 1
+            
+            return depthAttachemntDescriptor
         }
         
         private func createKernelPipelineState(_ kernelFunctionName: String) -> MTLComputePipelineState {
