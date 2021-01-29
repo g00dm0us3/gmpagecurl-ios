@@ -10,7 +10,6 @@
 		E514A5A224BF0AD800ED988D /* RenderingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E514A5A124BF0AD800ED988D /* RenderingView.swift */; };
 		E541784B24C01DF1000040B8 /* RenderingTestInputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E541784A24C01DF1000040B8 /* RenderingTestInputManager.swift */; };
 		E568AB0D25BF0F89003C34CA /* InputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E568AB0C25BF0F89003C34CA /* InputManager.swift */; };
-		E5A98933226F04BD00A13B34 /* RenderingPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5A98932226F04BD00A13B34 /* RenderingPipeline.swift */; };
 		E5AB192022725A17007521F5 /* MatrixUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5AB191F22725A17007521F5 /* MatrixUtils.swift */; };
 		E5C4CEAD223BA7B70077B654 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C4CEAC223BA7B70077B654 /* AppDelegate.swift */; };
 		E5C4CEAF223BA7B70077B654 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C4CEAE223BA7B70077B654 /* ViewController.swift */; };
@@ -39,7 +38,6 @@
 		E514A5A124BF0AD800ED988D /* RenderingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingView.swift; sourceTree = "<group>"; };
 		E541784A24C01DF1000040B8 /* RenderingTestInputManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingTestInputManager.swift; sourceTree = "<group>"; };
 		E568AB0C25BF0F89003C34CA /* InputManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputManager.swift; sourceTree = "<group>"; };
-		E5A98932226F04BD00A13B34 /* RenderingPipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingPipeline.swift; sourceTree = "<group>"; };
 		E5AB191F22725A17007521F5 /* MatrixUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixUtils.swift; sourceTree = "<group>"; };
 		E5C4CEA9223BA7B70077B654 /* GMPageCurl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GMPageCurl.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E5C4CEAC223BA7B70077B654 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -153,7 +151,6 @@
 				E5C7531A223D1207004D46CA /* RenderingDevice.swift */,
 				E5C75318223D0F15004D46CA /* Renderer.swift */,
 				E5C75321223D1BAE004D46CA /* RenderingViewController.swift */,
-				E5A98932226F04BD00A13B34 /* RenderingPipeline.swift */,
 				E514A5A124BF0AD800ED988D /* RenderingView.swift */,
 			);
 			path = Rendering;
@@ -267,7 +264,6 @@
 				E5C75322223D1BAE004D46CA /* RenderingViewController.swift in Sources */,
 				E5C75319223D0F15004D46CA /* Renderer.swift in Sources */,
 				E541784B24C01DF1000040B8 /* RenderingTestInputManager.swift in Sources */,
-				E5A98933226F04BD00A13B34 /* RenderingPipeline.swift in Sources */,
 				E5AB192022725A17007521F5 /* MatrixUtils.swift in Sources */,
 				E568AB0D25BF0F89003C34CA /* InputManager.swift in Sources */,
 				E514A5A224BF0AD800ED988D /* RenderingView.swift in Sources */,

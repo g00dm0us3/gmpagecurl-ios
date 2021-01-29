@@ -20,12 +20,9 @@ final class Renderer {
     private var vertexIndexBuffer: MTLBuffer?
 
     private var currentDrawable: CAMetalDrawable?
-    private var renderingPipeline: RenderingPipeline
 
     private var perspectiveMatrix: simd_float4x4
     private var lightMatrix: simd_float4x4
-    private let computedPositions:MTLTexture // positions textures
-    private let computedNormals: MTLTexture
     
     private var inputManager: InputManager
     
@@ -44,31 +41,34 @@ final class Renderer {
     fileprivate var vertexIndicies: [Int32] = []
     
     // should correspond to the #defines in shader
-    fileprivate let modelWidth = 75
-    fileprivate let modelHeight = 100
+    fileprivate let modelWidth = 100
+    fileprivate let modelHeight = 125
     
     private var defaultLibrary: MTLLibrary!
     private var device: MTLDevice {
         return RenderingDevice.defaultDevice
     }
     
-    private let state = RendererState(RenderingDevice.defaultDevice)
+    private let state: RendererState
+    
+    private var computedNormals: MTLTexture {
+        return state.computedNormals!
+    }
+    
+    private var computedPositions: MTLTexture {
+        return state.computedPositions!
+    }
     
     init(inputManager: InputManager) {
         self.inputManager = inputManager
+        state = RendererState(RenderingDevice.defaultDevice, modelWidth: modelWidth, modelHeight: modelHeight)
         
-        renderingPipeline = RenderingPipeline()
-
         perspectiveMatrix = MatrixUtils.matrix_perspective(aspect: 1, fovy: 90.0, near: 0.1, far: 100)
-        
         
         let ortho = MatrixUtils.matrix_ortho(left: -1, right: 1, bottom: -1, top: 1, near: 1, far: -1)
         let lightView = MatrixUtils.matrix_lookat(at: simd_float3(0,0,0), eye: simd_float3(0,0,-1), up: simd_float3(0,1,0))
         lightMatrix = ortho * lightView
 
-        computedNormals = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: modelWidth, height: modelHeight)
-        computedPositions = renderingPipeline.makeOutputComputeTexture(pixelFormat: .rgba32Float, width: modelWidth, height: modelHeight)
-        
         defaultLibrary = device.makeDefaultLibrary()
     }
     
@@ -79,16 +79,16 @@ final class Renderer {
     func render(in layer: CAMetalLayer) {
         fillBuffers()
         let drawable = self.drawable(from: layer)
-        state.buildTransientState(for: drawable)
         
-        let commandBuffer = renderingPipeline.getCommandBuffer()
         
-        computePositionsPass(commandBuffer)
-        shadowRenderPass(commandBuffer, (drawable.texture.width, drawable.texture.height))
-        colorRenderPass(commandBuffer, drawable)
+        let newCommandBuffer = state.buildTransientState(for: drawable)
+        
+        computePositionsPass(newCommandBuffer)
+        shadowRenderPass(newCommandBuffer, (drawable.texture.width, drawable.texture.height))
+        colorRenderPass(newCommandBuffer, drawable)
 
-        commandBuffer.present(drawable)
-        commandBuffer.commit()
+        newCommandBuffer.present(drawable)
+        newCommandBuffer.commit()
     }
     
     private func computePositionsPass(_ commandBuffer: MTLCommandBuffer) {
@@ -208,7 +208,9 @@ final class Renderer {
         return currentDrawable!
     }
 
+    private var didFill = false
     private func fillBuffers() {
+        guard !didFill else { return }
         makeBuffers()
 
         guard let uniformBufferPointer = uniformBuffer?.contents() else { fatalError("Couldn't access buffer") }
@@ -230,6 +232,8 @@ final class Renderer {
         memcpy(inputBuifferPointer, &radius, MemoryLayout<Float>.size)
         memcpy(inputBuifferPointer + MemoryLayout<Float>.size, &phi, MemoryLayout<Float>.size)
         memcpy(inputBuifferPointer + 2*MemoryLayout<Float>.size, &viewState, MemoryLayout<Int>.size)
+        
+        didFill = true
     }
 
     private func makeBuffers() {
@@ -297,6 +301,8 @@ extension Renderer {
         private(set) var depthStencilStateForColorPass: MTLDepthStencilState!
         
         private(set) var depthTexture: MTLTexture!
+        private(set) var computedPositions:MTLTexture! // positions textures
+        private(set) var computedNormals: MTLTexture!
         
         /// Transient
         
@@ -320,8 +326,11 @@ extension Renderer {
             }
         }
         
-        init(_ device: MTLDevice) {
+        private var commandQueue: MTLCommandQueue
+
+        init(_ device: MTLDevice, modelWidth: Int, modelHeight: Int) {
             self.device = device
+            self.commandQueue = self.device.makeCommandQueue()!
             library = device.makeDefaultLibrary()!
             self.computePositionsPipelineState = createKernelPipelineState("compute_positions")
             self.computeNormalsPipelineState = createKernelPipelineState("compute_normals")
@@ -338,14 +347,19 @@ extension Renderer {
             depthDescriptor.depthCompareFunction = .lessEqual
             depthDescriptor.isDepthWriteEnabled = true
             depthStencilStateForColorPass = device.makeDepthStencilState(descriptor: depthDescriptor)
+            
+            computedPositions = makeOutputComputeTexture(pixelFormat: .rgba32Float, width: modelWidth, height: modelHeight)
+            computedNormals = makeOutputComputeTexture(pixelFormat: .rgba32Float, width: modelWidth, height: modelHeight)
         }
         
-        func buildTransientState(for drawable: CAMetalDrawable) {
+        func buildTransientState(for drawable: CAMetalDrawable) -> MTLCommandBuffer {
             drawableSize = CGSize(width: drawable.texture.width, height: drawable.texture.height)
             
             depthAttachmentDescriptorForColorPass = buildDepthAttachmentDescriptorForColorPass()
             depthAttachemntDescriptorForShadowPass = buildDepthAttachmentDescriptorForShadowPass()
             didUpdateDrawableSize = false
+            
+            return commandQueue.makeCommandBuffer()!
         }
         
         private func buildDepthAttachmentDescriptorForColorPass() -> MTLRenderPassDepthAttachmentDescriptor {
@@ -430,6 +444,17 @@ extension Renderer {
             pipelineStateDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormat.bgra8Unorm
 
             return try device.makeRenderPipelineState(descriptor: pipelineStateDescriptor)
+        }
+        
+        private func makeOutputComputeTexture(pixelFormat: MTLPixelFormat, width: Int, height: Int) -> MTLTexture
+        {
+            let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: pixelFormat, width: width, height: height, mipmapped: false)
+            
+            textureDescriptor.usage = [.shaderRead, .shaderWrite]
+            
+            guard let texture = device.makeTexture(descriptor: textureDescriptor) else { fatalError("Couldn't create texture")}
+            
+            return texture
         }
     }
 }

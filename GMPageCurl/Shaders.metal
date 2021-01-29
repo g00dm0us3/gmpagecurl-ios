@@ -19,8 +19,8 @@
 #define NDT_MAX_COORD 1
 #define NDT_MIN_COORD -1
 
-#define MODEL_WIDTH 75.0f
-#define MODEL_HEIGHT 100.0f
+#define MODEL_WIDTH 100.0f
+#define MODEL_HEIGHT 125.0f
 
 using namespace metal;
 
@@ -79,7 +79,7 @@ inline bool should_transform(packed_float3 vi, float phi, float xCoord) {
     float2 a = rot(float2(xCoord, -1), phi);
     float2 b = rot(float2(xCoord, 1), phi);
     
-    /// @note:  Fast Robust Prdicates For Computational Geometry, https://www.cs.cmu.edu/~quake/robust.html
+    /// @note:  Fast Robust Predicates For Computational Geometry, https://www.cs.cmu.edu/~quake/robust.html
     /// @note ccw for a,b,c c on left, det > 0
     
     float3x3 mat = float3x3(float3{a.x, b.x, vi.x}, float3{a.y, b.y, vi.y}, float3{ 1.0, 1.0, 1.0});
@@ -250,7 +250,6 @@ kernel void compute_normals(const texture2d<float> vertices [[texture(0)]],
     n = normalize(n);
 
     normals.write(float4(float3(point.x, point.y, n.z), 1), tid);
-    //normals.write(float4(float3(point.x, point.y, 1), 1), tid);
 }
 
 vertex VertexOut vertex_function(texture2d<float> tex_vertices [[texture(0)]],
@@ -314,7 +313,6 @@ fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> dept
     
     /// - todo: clamp it so, that pitch black is no longer a valid color,  but the top is not above any of the two (light_color / and wtv.)
     return float4((1-val)*diffuse, 1);
-    //return float4(light_color,1);
 }
 
 vertex float4 vertex_pos_only(texture2d<float> tex_vertices [[texture(0)]],
