@@ -128,7 +128,7 @@ final class Renderer {
     private func shadowRenderPass(_ commandBuffer: MTLCommandBuffer, _ size: (width: Int, height: Int)) {
         // MARK: Setup Render Pass Descriptor
         let renderPassDescriptor = MTLRenderPassDescriptor()
-        renderPassDescriptor.depthAttachment = state.depthAttachemntDescriptor!
+        renderPassDescriptor.depthAttachment = state.depthAttachemntDescriptorForShadowPass!
         
         // MARK: Setup Render Pipeline State
         let shadowPipelineState = state.shadowPipelineState!
@@ -159,41 +159,19 @@ final class Renderer {
         //renderPassDescriptor.colorAttachments[0].storeAction = MTLStoreAction.multisampleResolve
         renderPassDescriptor.colorAttachments[0].storeAction = .store
         
-        let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: drawable.texture.width, height: drawable.texture.height, mipmapped: false)
+        /*let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: drawable.texture.width, height: drawable.texture.height, mipmapped: false)
         textureDescriptor.textureType = .type2DMultisample
         textureDescriptor.sampleCount = 4
         textureDescriptor.storageMode = .memoryless
-        textureDescriptor.usage = .renderTarget
+        textureDescriptor.usage = .renderTarget*/
         // add code detecting when we are in simulator. depth testing w. MSAA is not supported in simulator.
-        let msTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: textureDescriptor)
+        //let msTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: textureDescriptor)
         
-        let depthAttachemntDescriptor = MTLRenderPassDepthAttachmentDescriptor()
-        
-        let regularTextureDesc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .depth32Float, width: drawable.texture.width, height: drawable.texture.height, mipmapped: false)
-        regularTextureDesc.storageMode = .private
-        regularTextureDesc.mipmapLevelCount = 1
-        regularTextureDesc.textureType = .type2D
-        regularTextureDesc.usage = [.shaderRead, .renderTarget]
-        let depthTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: regularTextureDesc)
-        
-        //depthAttachemntDescriptor.resolveTexture = depthTexture
-        //depthAttachemntDescriptor.texture = msTexture
-        depthAttachemntDescriptor.texture = depthTexture
-        depthAttachemntDescriptor.loadAction = .clear
-        //depthAttachemntDescriptor.storeAction = .multisampleResolve // not available in simulator
-        depthAttachemntDescriptor.storeAction = .store
-        depthAttachemntDescriptor.clearDepth = 1
-        
-        renderPassDescriptor.depthAttachment = depthAttachemntDescriptor
+        renderPassDescriptor.depthAttachment = state.depthAttachmentDescriptorForColorPass!
         
         //renderPassDescriptor.colorAttachments[0].texture = msTexture
         //renderPassDescriptor.colorAttachments[0].resolveTexture = drawable.texture
         renderPassDescriptor.colorAttachments[0].texture = drawable.texture
-        
-        let depthDescriptor = MTLDepthStencilDescriptor()
-        depthDescriptor.depthCompareFunction = .lessEqual
-        depthDescriptor.isDepthWriteEnabled = true
-        guard let depthState = RenderingDevice.defaultDevice.makeDepthStencilState(descriptor: depthDescriptor) else { fatalError("Cannot make depth texture, yo") }
         
         let colorPipelineState = state.colorPipelineState!
         let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor)!
@@ -201,7 +179,7 @@ final class Renderer {
         renderEncoder.pushDebugGroup("COLOR")
         renderEncoder.label = "CL"
         
-        renderEncoder.setDepthStencilState(depthState)
+        renderEncoder.setDepthStencilState(state.depthStencilStateForColorPass!)
         renderEncoder.setRenderPipelineState(colorPipelineState)
         
         renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 0)
@@ -316,15 +294,18 @@ extension Renderer {
         private(set) var shadowPipelineState: MTLRenderPipelineState!
         private(set) var depthStencilStateForShadowPass: MTLDepthStencilState!
         private(set) var colorPipelineState: MTLRenderPipelineState!
+        private(set) var depthStencilStateForColorPass: MTLDepthStencilState!
         
         private(set) var depthTexture: MTLTexture!
         
         /// Transient
         
-        private(set) var depthAttachemntDescriptor: MTLRenderPassDepthAttachmentDescriptor!
+        private(set) var depthAttachemntDescriptorForShadowPass: MTLRenderPassDepthAttachmentDescriptor!
+        private(set) var depthAttachmentDescriptorForColorPass: MTLRenderPassDepthAttachmentDescriptor!
         
         /// Private
         
+        private var depthTextureForColorPass: MTLTexture!
         private var library: MTLLibrary
         private var device: MTLDevice
         
@@ -347,21 +328,49 @@ extension Renderer {
             self.shadowPipelineState = try! makeShadowPipelineState()
             self.colorPipelineState = try! makeColorPipelineState()
             
-            let depthDescriptor = MTLDepthStencilDescriptor()
+            var depthDescriptor = MTLDepthStencilDescriptor()
             depthDescriptor.depthCompareFunction = .lessEqual
             depthDescriptor.isDepthWriteEnabled = true
             
-            depthStencilStateForShadowPass = RenderingDevice.defaultDevice.makeDepthStencilState(descriptor: depthDescriptor)
+            depthStencilStateForShadowPass = device.makeDepthStencilState(descriptor: depthDescriptor)
+            
+            depthDescriptor = MTLDepthStencilDescriptor()
+            depthDescriptor.depthCompareFunction = .lessEqual
+            depthDescriptor.isDepthWriteEnabled = true
+            depthStencilStateForColorPass = device.makeDepthStencilState(descriptor: depthDescriptor)
         }
         
         func buildTransientState(for drawable: CAMetalDrawable) {
             drawableSize = CGSize(width: drawable.texture.width, height: drawable.texture.height)
             
-            depthAttachemntDescriptor = buildDepthAttachmentDescriptor()
+            depthAttachmentDescriptorForColorPass = buildDepthAttachmentDescriptorForColorPass()
+            depthAttachemntDescriptorForShadowPass = buildDepthAttachmentDescriptorForShadowPass()
             didUpdateDrawableSize = false
         }
         
-        private func buildDepthAttachmentDescriptor() -> MTLRenderPassDepthAttachmentDescriptor {
+        private func buildDepthAttachmentDescriptorForColorPass() -> MTLRenderPassDepthAttachmentDescriptor {
+            let depthAttachemntDescriptor = MTLRenderPassDepthAttachmentDescriptor()
+            
+            if depthTextureForColorPass == nil || didUpdateDrawableSize {
+                let regularTextureDesc = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .depth32Float, width: Int(drawableSize.width), height: Int(drawableSize.height), mipmapped: false)
+                regularTextureDesc.storageMode = .private
+                regularTextureDesc.mipmapLevelCount = 1
+                regularTextureDesc.textureType = .type2D
+                regularTextureDesc.usage = [.shaderRead, .renderTarget]
+                depthTextureForColorPass = RenderingDevice.defaultDevice.makeTexture(descriptor: regularTextureDesc)
+            }
+            
+            //depthAttachemntDescriptor.resolveTexture = depthTexture
+            //depthAttachemntDescriptor.texture = msTexture
+            depthAttachemntDescriptor.texture = depthTextureForColorPass
+            depthAttachemntDescriptor.loadAction = .clear
+            //depthAttachemntDescriptor.storeAction = .multisampleResolve // not available in simulator
+            depthAttachemntDescriptor.storeAction = .store
+            depthAttachemntDescriptor.clearDepth = 1
+            return depthAttachemntDescriptor
+        }
+        
+        private func buildDepthAttachmentDescriptorForShadowPass() -> MTLRenderPassDepthAttachmentDescriptor {
             let depthAttachemntDescriptor = MTLRenderPassDepthAttachmentDescriptor()
             
             if depthTexture == nil || didUpdateDrawableSize {
