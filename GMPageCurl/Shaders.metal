@@ -19,8 +19,8 @@
 #define NDT_MAX_COORD 1
 #define NDT_MIN_COORD -1
 
-#define MODEL_WIDTH 100.0f
-#define MODEL_HEIGHT 125.0f
+#define MODEL_WIDTH 50.0f
+#define MODEL_HEIGHT 100.0f
 
 using namespace metal;
 
@@ -287,7 +287,8 @@ float calculate_shadow(float4 fragment_in_light_space, depth2d<float> depth) {
     xy = xy* 0.5 + 0.5;
     xy.y = 1 - xy.y;
     
-    float val = depth.sample(texSampler, xy);
+    // do Poisson disc here
+    float val = depth.sample(texSampler, xy+0.01);
     
     float b = 0.007;
     float shadow = xyz.z - b > val ? 0.5 : 0;

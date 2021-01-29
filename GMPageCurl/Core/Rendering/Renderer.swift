@@ -25,8 +25,8 @@ final class Renderer {
     fileprivate var vertexIndicies: [Int32] = []
     
     // should correspond to the #defines in shader
-    fileprivate let modelWidth = 100
-    fileprivate let modelHeight = 125
+    fileprivate let modelWidth = 50
+    fileprivate let modelHeight = 100
     
     private var defaultLibrary: MTLLibrary!
     private var device: MTLDevice {
