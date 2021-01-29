@@ -10,6 +10,14 @@ import Foundation
 import UIKit
 import simd
 
+fileprivate protocol ModeInput {
+    var phi: Float { get }
+    var distance: Float { get }
+    
+    func panned(_ translation: CGPoint, velocity: CGPoint) -> simd_float4x4
+    func scaled(_ scale: Float) -> simd_float4x4
+}
+
 extension Renderer {
     final class WorldState {
         /// Alters, how the input is process
@@ -22,33 +30,40 @@ extension Renderer {
         /// Variable
         
         private(set) var stateUpdated = true
-        
-        var renderingViewState: RenderViewStates = .cylinder {
-            didSet {
-                stateUpdated = oldValue == renderingViewState
-            }
+
+        private(set) var worldMatrix: simd_float4x4
+        var lightModelMatrix: simd_float3x3 {
+            let lightModelMatrix = simd_float3x3([
+                simd_float3(worldMatrix[0][0],worldMatrix[0][1],worldMatrix[0][2]),
+                simd_float3(worldMatrix[1][0],worldMatrix[1][1],worldMatrix[1][2]),
+                simd_float3(worldMatrix[2][0],worldMatrix[2][1],worldMatrix[2][2])]).inverse;
+            return lightModelMatrix.transpose
         }
         
-        var worldMatrix: simd_float4x4 {
-            let translation = MatrixUtils.matrix4x4Translate(t: simd_float3(arrayLiteral: 0, 0, -1.1))
-            let scaleMatrix = MatrixUtils.matrix4x4Scale(scale: simd_float3(arrayLiteral: scale, scale, scale))
-
-            let rotationMatrixX = MatrixUtils.matrix4x4RotateAroundX(theta: thetaY)
-            let rotationMatrixY = MatrixUtils.matrix4x4RotateAroundY(theta: thetaX)
-
-            return translation*scaleMatrix*rotationMatrixX*rotationMatrixY
+        var phi: Float {
+            return modeInput.phi
         }
         
-        private(set) var phi: Float = 0
-        private(set) var radius: Float = 0
+        var distance: Float {
+            return modeInput.distance
+        }
+        
+        private let modeInput: ModeInput
         
         init() {
             perspectiveMatrix = MatrixUtils.matrix_perspective(aspect: 1, fovy: 90.0, near: 0.1, far: 100)
-            MatrixUtils.printMatrix(perspectiveMatrix)
-            
+
             let ortho = MatrixUtils.matrix_ortho(left: -1, right: 1, bottom: -1, top: 1, near: 1, far: -1)
             let lightView = MatrixUtils.matrix_lookat(at: simd_float3(0,0,0), eye: simd_float3(0,0,-1), up: simd_float3(0,1,0))
             lightMatrix = ortho * lightView
+            
+            if isDevMode {
+                modeInput = DebugModeInput()
+            } else {
+                modeInput = PaginationModeInput()
+            }
+            
+            worldMatrix = modeInput.scaled(1)
         }
         
         func worldPanned(_ translation: CGPoint, velocity: CGPoint) {
@@ -64,7 +79,25 @@ extension Renderer {
         }
     }
     
-    fileprivate class DevModeInput {
+    fileprivate class PaginationModeInput: ModeInput {
+        private(set) var phi = Float(0)
+        private(set) var distance = Float(0)
+        
+        private let worldMatrix = MatrixUtils.identityMatrix4x4
+        
+        func panned(_ translation: CGPoint, velocity: CGPoint) -> simd_float4x4 {
+            return worldMatrix
+        }
+        
+        func scaled(_ scale: Float) -> simd_float4x4 {
+            return worldMatrix
+        }
+    }
+    
+    fileprivate class DebugModeInput: ModeInput {
+        private(set) var phi = Float(0)
+        private(set) var distance = Float(0.7)
+        
         private(set) var thetaX = Float(0)
         private(set) var thetaY = Float(0)
         
@@ -75,7 +108,7 @@ extension Renderer {
         
         private var lastScale = Float(1)
         
-        func updateRotation(_ translation: CGPoint) {
+        func panned(_ translation: CGPoint, velocity: CGPoint) -> simd_float4x4 {
             let maxX = Float(UIScreen.main.bounds.maxX / 2)
             let maxY = Float(UIScreen.main.bounds.maxY / 2)
 
@@ -90,34 +123,48 @@ extension Renderer {
             
             lastThetaX = self.thetaX
             lastThetaY = self.thetaY
+            
+            return worldMatrix()
         }
         
-        func updateScale(_ scale: Float) {
+        func scaled(_ scale: Float) -> simd_float4x4 {
             self.scale = scale*lastScale
             lastScale = self.scale
+            
+            return worldMatrix()
         }
-    }
-    
-    fileprivate struct Utils {
-        /**
-         Reduce the number of rations to at most 1
-         */
-        @inline(__always) static func congruentAngle(_ radians: Float) -> Float {
-            let numberOfFullRotations = radians / (2*Float.pi)
+        
+        private func worldMatrix() -> simd_float4x4 {
+            let translation = MatrixUtils.matrix4x4Translate(t: simd_float3(arrayLiteral: 0, 0, -1.1))
+            let scaleMatrix = MatrixUtils.matrix4x4Scale(scale: simd_float3(arrayLiteral: scale, scale, scale))
 
-            if (numberOfFullRotations <= 1) {
-                return radians
+            let rotationMatrixX = MatrixUtils.matrix4x4RotateAroundX(theta: thetaY)
+            let rotationMatrixY = MatrixUtils.matrix4x4RotateAroundY(theta: thetaX)
+
+            return translation*scaleMatrix*rotationMatrixX*rotationMatrixY
+        }
+        
+        fileprivate struct Utils {
+            /**
+             Reduce the number of rations to at most 1
+             */
+            @inline(__always) static func congruentAngle(_ radians: Float) -> Float {
+                let numberOfFullRotations = radians / (2*Float.pi)
+
+                if (numberOfFullRotations <= 1) {
+                    return radians
+                }
+
+                return radians - (numberOfFullRotations-1)*2*Float.pi
             }
 
-            return radians - (numberOfFullRotations-1)*2*Float.pi
-        }
+            static func degree2rad(degree: Float) -> Float {
+                return (degree*Float.pi)/180.0
+            }
 
-        static func degree2rad(degree: Float) -> Float {
-            return (degree*Float.pi)/180.0
-        }
-
-        static func rescale(val: Float, ra: Float, rb: Float, na: Float, nb: Float) -> Float {
-            return (val-ra)*(nb-na)/(rb-ra)+na
+            static func rescale(val: Float, ra: Float, rb: Float, na: Float, nb: Float) -> Float {
+                return (val-ra)*(nb-na)/(rb-ra)+na
+            }
         }
     }
 }

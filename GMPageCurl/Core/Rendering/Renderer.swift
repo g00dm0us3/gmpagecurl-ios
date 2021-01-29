@@ -22,20 +22,6 @@ final class Renderer {
 
     private var currentDrawable: CAMetalDrawable?
 
-    private var inputManager: InputManager
-    
-    private var worldMatrix: simd_float4x4 {
-        return inputManager.worldMatrix
-    }
-    
-    private var lightModelMatrix: simd_float3x3 {
-        let lightModelMatrix = simd_float3x3([
-            simd_float3(worldMatrix[0][0],worldMatrix[0][1],worldMatrix[0][2]),
-            simd_float3(worldMatrix[1][0],worldMatrix[1][1],worldMatrix[1][2]),
-            simd_float3(worldMatrix[2][0],worldMatrix[2][1],worldMatrix[2][2])]).inverse;
-        return lightModelMatrix.transpose
-    }
-    
     fileprivate var vertexIndicies: [Int32] = []
     
     // should correspond to the #defines in shader
@@ -58,12 +44,18 @@ final class Renderer {
         return state.computedPositions!
     }
     
-    init(inputManager: InputManager) {
-        self.inputManager = inputManager
+    var cadDisplayLink: CADisplayLink!
+    weak var renderingView: UIView?
+    
+    init(_ view: UIView) {
         state = RendererState(RenderingDevice.defaultDevice, modelWidth: modelWidth, modelHeight: modelHeight)
         worldState = WorldState()
+        renderingView = view
+        defaultLibrary = RenderingDevice.defaultDevice.makeDefaultLibrary()
         
-        defaultLibrary = device.makeDefaultLibrary()
+        
+        cadDisplayLink = CADisplayLink(target: self, selector: #selector(redraw))
+        cadDisplayLink.add(to: RunLoop.main, forMode: RunLoop.Mode.default)
     }
     
     func setScale(_ scale: Float) {
@@ -78,9 +70,19 @@ final class Renderer {
         
     }
     
+    @objc
+    private func redraw() {
+        guard let mtlLayer = renderingView?.layer as? CAMetalLayer else { fatalError("This should be rendering layer!") }
+        render(in: mtlLayer)
+    }
+    
     private func render(in layer: CAMetalLayer) {
         guard worldState.stateUpdated else { return }
-        defer { worldState.stateUpdated = true }
+        defer {
+            worldState.setStateProcessed()
+            cadDisplayLink.isPaused = true
+        }
+        
         fillBuffers()
         let drawable = self.drawable(from: layer)
         
@@ -218,17 +220,17 @@ final class Renderer {
 
         guard let uniformBufferPointer = uniformBuffer?.contents() else { fatalError("Couldn't access buffer") }
 
-        var worldMatrix = self.worldMatrix
-        var lightModelMatrix = self.lightModelMatrix
+        var worldMatrix = self.worldState.worldMatrix
+        var lightModelMatrix = self.worldState.lightModelMatrix
         
         memcpy(uniformBufferPointer, &worldMatrix, MatrixUtils.matrix4x4Size)
         memcpy(uniformBufferPointer + MatrixUtils.matrix4x4Size, &lightModelMatrix, MatrixUtils.matrix4x4Size)
 
         guard let inputBuifferPointer = inputBuffer?.contents() else { fatalError("Couldn't access buffer") }
 
-        var radius = inputManager.radius
-        var phi = inputManager.phi
-        var viewState = inputManager.renderingViewState.rawValue
+        var radius = worldState.distance
+        var phi = worldState.phi
+        var viewState = 0 // 1 will produce a box view, not very useful, only when debugging geometry
 
         memcpy(inputBuifferPointer, &radius, MemoryLayout<Float>.size)
         memcpy(inputBuifferPointer + MemoryLayout<Float>.size, &phi, MemoryLayout<Float>.size)
