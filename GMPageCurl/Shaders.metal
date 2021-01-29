@@ -11,7 +11,7 @@
 #include <simd/simd.h>
 
 #define PI 3.1415926535897932384626433832795
-#define CYLINDER_RADIUS 0.2
+#define CYLINDER_RADIUS 0.15
 
 #define PHI_EPSILON 1e-2
 #define EPSILON 1e-6
@@ -45,11 +45,14 @@ typedef struct {
 } VertexOut;
 
 typedef struct {
-    float4x4 lightMatrix;
     float4x4 modelMatrix;
-    float4x4 perspectiveMatrix;
     float3x3 lightModelMatrix;
 } Uniforms;
+
+typedef struct {
+    float4x4 lightMatrix;
+    float4x4 perspectiveMatrix;
+} ConstantUniforms;
 
 typedef struct {
     float xCoord;
@@ -256,6 +259,7 @@ vertex VertexOut vertex_function(texture2d<float> tex_vertices [[texture(0)]],
                                  texture2d<float> tex_normals [[texture(1)]],
                                  constant Uniforms &uniforms [[buffer(0)]],
                                  constant VertexIndex *tex_indicies [[buffer(1)]],
+                                 constant ConstantUniforms &constUniforms[[buffer(2)]],
                                  uint vid [[vertex_id]])
 {
     VertexOut out;
@@ -268,9 +272,9 @@ vertex VertexOut vertex_function(texture2d<float> tex_vertices [[texture(0)]],
     
     out.fragment_in_model_space = float3((uniforms.modelMatrix * pos).xyz);
     out.normal = uniforms.lightModelMatrix * normal;
-    out.fragment_in_light_space = uniforms.lightMatrix * float4(out.fragment_in_model_space, 1);
-    out.texture_coordinate = uniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
-    out.position = uniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
+    out.fragment_in_light_space = constUniforms.lightMatrix * float4(out.fragment_in_model_space, 1);
+    out.texture_coordinate = constUniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
+    out.position = constUniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
     out.color = float4(0,0,1,1);
     
     return out;
@@ -319,6 +323,7 @@ vertex float4 vertex_pos_only(texture2d<float> tex_vertices [[texture(0)]],
                                  texture2d<float> tex_normals [[texture(1)]],
                                  constant Uniforms &uniforms [[buffer(0)]],
                                  constant VertexIndex *tex_indicies [[buffer(1)]],
+                                constant ConstantUniforms &constUniforms[[buffer(2)]],
                                  uint vid [[vertex_id]])
 {
     uint2 tex_coord = uint2(tex_indicies[vid].coords.xy);
@@ -326,5 +331,5 @@ vertex float4 vertex_pos_only(texture2d<float> tex_vertices [[texture(0)]],
 
     float4 pos = float4(position.xyz, 1);
 
-    return uniforms.lightMatrix * uniforms.modelMatrix * pos;
+    return constUniforms.lightMatrix * uniforms.modelMatrix * pos;
 }

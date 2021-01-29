@@ -99,4 +99,10 @@ struct MatrixUtils {
         ])
     }
     
+    static func printMatrix(_ m: simd_float4x4) {
+        for i in 0..<4 {
+            print("[ \(m[i][0]) \(m[i][1]) \(m[i][2]) \(m[i][3]) ]")
+        }
+    }
+    
 }

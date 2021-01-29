@@ -57,23 +57,11 @@ final class RenderingTestInputManager: InputManager {
         lastThetaY = thetaY
     }
 
-    private func updateRotation(_ translation: CGPoint) {
-        let maxX = Float(UIScreen.main.bounds.maxX / 2)
-        let maxY = Float(UIScreen.main.bounds.maxY / 2)
-
-        let x = Float(translation.x / 2)
-        let y = Float(translation.y / 2)
-
-        let thetaX = (x/maxX)*2*Float.pi
-        let thetaY = (y/maxY)*2*Float.pi
-
-        self.thetaX = RenderingTestInputManager.congruentAngle(lastThetaX + thetaX)
-        self.thetaY = RenderingTestInputManager.congruentAngle(lastThetaY + thetaY)
-    }
+    
 
     init() {
         radius = 0.2 * 3.141
-        phi = RenderingTestInputManager.degree2rad(degree:20)
+        phi = RenderingTestInputManager.degree2rad(degree:-20)
     }
     
     /**

@@ -16,14 +16,12 @@ import CoreGraphics
 
 final class Renderer {
     private var uniformBuffer: MTLBuffer?
+    private var constantUniformBuffer: MTLBuffer?
     private var inputBuffer: MTLBuffer?
     private var vertexIndexBuffer: MTLBuffer?
 
     private var currentDrawable: CAMetalDrawable?
 
-    private var perspectiveMatrix: simd_float4x4
-    private var lightMatrix: simd_float4x4
-    
     private var inputManager: InputManager
     
     private var worldMatrix: simd_float4x4 {
@@ -50,6 +48,7 @@ final class Renderer {
     }
     
     private let state: RendererState
+    private let worldState: WorldState
     
     private var computedNormals: MTLTexture {
         return state.computedNormals!
@@ -62,24 +61,28 @@ final class Renderer {
     init(inputManager: InputManager) {
         self.inputManager = inputManager
         state = RendererState(RenderingDevice.defaultDevice, modelWidth: modelWidth, modelHeight: modelHeight)
+        worldState = WorldState()
         
-        perspectiveMatrix = MatrixUtils.matrix_perspective(aspect: 1, fovy: 90.0, near: 0.1, far: 100)
-        
-        let ortho = MatrixUtils.matrix_ortho(left: -1, right: 1, bottom: -1, top: 1, near: 1, far: -1)
-        let lightView = MatrixUtils.matrix_lookat(at: simd_float3(0,0,0), eye: simd_float3(0,0,-1), up: simd_float3(0,1,0))
-        lightMatrix = ortho * lightView
-
         defaultLibrary = device.makeDefaultLibrary()
     }
     
-    func setInputManager(_ inputManager: InputManager) {
-        self.inputManager = inputManager
+    func setScale(_ scale: Float) {
+        
     }
     
-    func render(in layer: CAMetalLayer) {
+    func setPan(_ transition: CGPoint, velocity: CGPoint) {
+        
+    }
+    
+    func viewDidUpdate() {
+        
+    }
+    
+    private func render(in layer: CAMetalLayer) {
+        guard worldState.stateUpdated else { return }
+        defer { worldState.stateUpdated = true }
         fillBuffers()
         let drawable = self.drawable(from: layer)
-        
         
         let newCommandBuffer = state.buildTransientState(for: drawable)
         
@@ -141,6 +144,7 @@ final class Renderer {
         
         renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 0)
         renderEncoder.setVertexBuffer(vertexIndexBuffer, offset: 0, index: 1)
+        renderEncoder.setVertexBuffer(constantUniformBuffer, offset: 0, index: 2)
         
         renderEncoder.setVertexTexture(computedPositions, index: 0)
         renderEncoder.setVertexTexture(computedNormals, index: 1) // computed vertices / normals
@@ -184,6 +188,7 @@ final class Renderer {
         
         renderEncoder.setVertexBuffer(uniformBuffer, offset: 0, index: 0)
         renderEncoder.setVertexBuffer(vertexIndexBuffer, offset: 0, index: 1)
+        renderEncoder.setVertexBuffer(constantUniformBuffer, offset: 0, index: 2)
         
         renderEncoder.setVertexTexture(computedPositions, index: 0)
         renderEncoder.setVertexTexture(computedNormals, index: 1) // computed vertices / normals
@@ -208,20 +213,16 @@ final class Renderer {
         return currentDrawable!
     }
 
-    private var didFill = false
     private func fillBuffers() {
-        guard !didFill else { return }
         makeBuffers()
 
         guard let uniformBufferPointer = uniformBuffer?.contents() else { fatalError("Couldn't access buffer") }
 
         var worldMatrix = self.worldMatrix
         var lightModelMatrix = self.lightModelMatrix
-
-        memcpy(uniformBufferPointer, &lightMatrix, MatrixUtils.matrix4x4Size)
-        memcpy(uniformBufferPointer + MatrixUtils.matrix4x4Size, &worldMatrix, MatrixUtils.matrix4x4Size)
-        memcpy(uniformBufferPointer + 2*MatrixUtils.matrix4x4Size, &perspectiveMatrix, MatrixUtils.matrix4x4Size)
-        memcpy(uniformBufferPointer + 3*MatrixUtils.matrix4x4Size, &lightModelMatrix, MatrixUtils.matrix4x4Size)
+        
+        memcpy(uniformBufferPointer, &worldMatrix, MatrixUtils.matrix4x4Size)
+        memcpy(uniformBufferPointer + MatrixUtils.matrix4x4Size, &lightModelMatrix, MatrixUtils.matrix4x4Size)
 
         guard let inputBuifferPointer = inputBuffer?.contents() else { fatalError("Couldn't access buffer") }
 
@@ -232,8 +233,6 @@ final class Renderer {
         memcpy(inputBuifferPointer, &radius, MemoryLayout<Float>.size)
         memcpy(inputBuifferPointer + MemoryLayout<Float>.size, &phi, MemoryLayout<Float>.size)
         memcpy(inputBuifferPointer + 2*MemoryLayout<Float>.size, &viewState, MemoryLayout<Int>.size)
-        
-        didFill = true
     }
 
     private func makeBuffers() {
@@ -241,11 +240,26 @@ final class Renderer {
         let device = RenderingDevice.defaultDevice
 
         if uniformBuffer == nil {
-            let totalSz = 4*MatrixUtils.matrix4x4Size
+            let totalSz = 2*MatrixUtils.matrix4x4Size
 
             guard let buffer = device.makeBuffer(length: totalSz, options: []) else { fatalError("Couldn't create a uniform buffer") }
 
             uniformBuffer = buffer
+        }
+        
+        if constantUniformBuffer == nil {
+            let totalSz = 2*MatrixUtils.matrix4x4Size
+
+            guard let buffer = device.makeBuffer(length: totalSz, options: []) else { fatalError("Couldn't create a uniform buffer") }
+
+            constantUniformBuffer = buffer
+            var lightMatrix = worldState.lightMatrix
+            var perspectiveMatrix = worldState.perspectiveMatrix
+            
+            guard let uniformBufferPointer = constantUniformBuffer?.contents() else { fatalError("Couldn't access buffer") }
+            
+            memcpy(uniformBufferPointer, &lightMatrix, MatrixUtils.matrix4x4Size)
+            memcpy(uniformBufferPointer + MatrixUtils.matrix4x4Size, &perspectiveMatrix, MatrixUtils.matrix4x4Size)
         }
 
         if inputBuffer == nil {
