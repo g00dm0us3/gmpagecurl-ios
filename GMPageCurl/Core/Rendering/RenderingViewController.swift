@@ -18,7 +18,7 @@ class RenderingViewController: UIViewController {
 
         renderingView = RenderingView(frame: CGRect.zero)
         renderingView.translatesAutoresizingMaskIntoConstraints = false
-
+        view.backgroundColor = .blue
         view.addSubview(renderingView)
 
         renderingView.topAnchor.constraint(equalTo: view.topAnchor, constant: 50).isActive = true
@@ -26,6 +26,6 @@ class RenderingViewController: UIViewController {
         renderingView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         renderingView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
 
-        renderer = Renderer(renderingView)
+        renderer = Renderer(renderingView, underlyingView: view)
     }
 }

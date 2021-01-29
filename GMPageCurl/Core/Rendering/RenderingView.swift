@@ -19,6 +19,9 @@ class RenderingView: UIView {
 
         mtlLayer.device = RenderingDevice.defaultDevice
         mtlLayer.pixelFormat = MTLPixelFormat.bgra8Unorm
+        mtlLayer.isOpaque = false
+        isOpaque = false
+        
     }
 
     required init?(coder: NSCoder) {

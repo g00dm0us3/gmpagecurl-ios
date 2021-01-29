@@ -25,8 +25,8 @@ final class Renderer {
     fileprivate var vertexIndicies: [Int32] = []
     
     // should correspond to the #defines in shader
-    fileprivate let modelWidth = 50
-    fileprivate let modelHeight = 100
+    fileprivate let modelWidth = 100
+    fileprivate let modelHeight = 200
     
     private var defaultLibrary: MTLLibrary!
     private var device: MTLDevice {
@@ -46,15 +46,16 @@ final class Renderer {
     
     var cadDisplayLink: CADisplayLink!
     weak var renderingView: UIView?
+    weak var underlyingView: UIView?
     
     var superPhi: Float = 0
     
-    init(_ view: UIView) {
+    init(_ view: UIView, underlyingView: UIView) {
         state = RendererState(RenderingDevice.defaultDevice, modelWidth: modelWidth, modelHeight: modelHeight)
         worldState = WorldState()
         renderingView = view
         defaultLibrary = RenderingDevice.defaultDevice.makeDefaultLibrary()
-        
+        self.underlyingView = underlyingView
         
         cadDisplayLink = CADisplayLink(target: self, selector: #selector(redraw))
         cadDisplayLink.add(to: RunLoop.main, forMode: RunLoop.Mode.default)
@@ -83,9 +84,10 @@ final class Renderer {
         defer {
             worldState.setStateProcessed()
             //cadDisplayLink.isPaused = true
+            //underlyingView?.setNeedsDisplay()
         }
-        
         fillBuffers()
+        
         let drawable = self.drawable(from: layer)
         
         let newCommandBuffer = state.buildTransientState(for: drawable)
@@ -160,12 +162,7 @@ final class Renderer {
     
     private func colorRenderPass(_ commandBuffer: MTLCommandBuffer, _ drawable: CAMetalDrawable) {
         // MARK: Start Color Pass
-        let renderPassDescriptor = MTLRenderPassDescriptor() // a group of rendering targets
         
-        renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadAction.clear
-        renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(1, 1, 1, 1)
-        //renderPassDescriptor.colorAttachments[0].storeAction = MTLStoreAction.multisampleResolve
-        renderPassDescriptor.colorAttachments[0].storeAction = .store
         
         /*let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: drawable.texture.width, height: drawable.texture.height, mipmapped: false)
         textureDescriptor.textureType = .type2DMultisample
@@ -174,7 +171,11 @@ final class Renderer {
         textureDescriptor.usage = .renderTarget*/
         // add code detecting when we are in simulator. depth testing w. MSAA is not supported in simulator.
         //let msTexture = RenderingDevice.defaultDevice.makeTexture(descriptor: textureDescriptor)
-        
+        let renderPassDescriptor = MTLRenderPassDescriptor() // a group of rendering targets
+        renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(0, 0, 0, 0) // do not touch! the only way to make it transparent in simulator
+        renderPassDescriptor.colorAttachments[0].loadAction = MTLLoadAction.clear
+        //renderPassDescriptor.colorAttachments[0].storeAction = MTLStoreAction.multisampleResolve
+        renderPassDescriptor.colorAttachments[0].storeAction = .store
         renderPassDescriptor.depthAttachment = state.depthAttachmentDescriptorForColorPass!
         
         //renderPassDescriptor.colorAttachments[0].texture = msTexture
@@ -208,7 +209,6 @@ final class Renderer {
         //drawable can be nil if offscreen
         //or if taken too long to render
         //drawable is returned from command buffer
-
         currentDrawable = nil
         while(currentDrawable == nil) {
             currentDrawable = layer.nextDrawable()

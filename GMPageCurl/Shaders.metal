@@ -11,7 +11,7 @@
 #include <simd/simd.h>
 
 #define PI 3.1415926535897932384626433832795
-#define CYLINDER_RADIUS 0.15
+#define CYLINDER_RADIUS 0.2
 
 #define PHI_EPSILON 1e-2
 #define EPSILON 1e-6
@@ -19,8 +19,8 @@
 #define NDT_MAX_COORD 1
 #define NDT_MIN_COORD -1
 
-#define MODEL_WIDTH 50.0f
-#define MODEL_HEIGHT 100.0f
+#define MODEL_WIDTH 100.0f
+#define MODEL_HEIGHT 200.0f
 
 using namespace metal;
 
@@ -288,6 +288,7 @@ float calculate_shadow(float4 fragment_in_light_space, depth2d<float> depth) {
     xy.y = 1 - xy.y;
     
     // do Poisson disc here
+    // will work, as long as pages are turned right to left
     float val = depth.sample(texSampler, xy+0.01);
     
     float b = 0.007;
