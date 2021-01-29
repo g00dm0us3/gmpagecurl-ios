@@ -26,10 +26,6 @@ final class ViewController: RenderingViewController {
         view.addGestureRecognizer(pinchGestureRecognizer)
     }
 
-    @IBAction func switchView(_ sender: UIBarButtonItem) {
-
-    }
-
     override func touchesBegan(_ touches: Set<UITouch>,
                       with event: UIEvent?) {
         let touch = touches.first
@@ -64,5 +60,37 @@ final class ViewController: RenderingViewController {
         let translation = gesture.translation(in: view)
         let velocity = gesture.velocity(in: view)
         inputManager.panGestureChanged(translation, velocity: velocity)*/
+        
+        let translation = gesture.translation(in: view)
+        let velocity = gesture.velocity(in: view)
+        
+        let dot = translation.normalize().dot(CGPoint(x: 1, y: 0))
+        let mul = CGFloat(translation.y < 0 ? -1 : 1)
+        let rads = mul*(CGFloat.pi-acos(dot))
+        //print(rads.rad2deg())
+        
+        if rads >= -CGFloat.pi/3 && rads <= CGFloat.pi/3 {
+            renderer.superPhi = Float(rads)
+        }
+    }
+}
+
+extension CGFloat {
+    func rad2deg() -> CGFloat {
+        return (self * 180) / CGFloat.pi
+    }
+}
+
+extension CGPoint {
+    func length() -> CGFloat {
+        return sqrt(x*x+y*y)
+    }
+    
+    func normalize() -> CGPoint {
+        return CGPoint(x: x/self.length(), y: y/self.length())
+    }
+    
+    func dot(_ vec: CGPoint) -> CGFloat {
+        return x*vec.x+y*vec.y
     }
 }

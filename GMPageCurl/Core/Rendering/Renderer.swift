@@ -47,6 +47,8 @@ final class Renderer {
     var cadDisplayLink: CADisplayLink!
     weak var renderingView: UIView?
     
+    var superPhi: Float = 0
+    
     init(_ view: UIView) {
         state = RendererState(RenderingDevice.defaultDevice, modelWidth: modelWidth, modelHeight: modelHeight)
         worldState = WorldState()
@@ -77,10 +79,10 @@ final class Renderer {
     }
     
     private func render(in layer: CAMetalLayer) {
-        guard worldState.stateUpdated else { return }
+        //guard worldState.stateUpdated else { return }
         defer {
             worldState.setStateProcessed()
-            cadDisplayLink.isPaused = true
+            //cadDisplayLink.isPaused = true
         }
         
         fillBuffers()
@@ -229,7 +231,7 @@ final class Renderer {
         guard let inputBuifferPointer = inputBuffer?.contents() else { fatalError("Couldn't access buffer") }
 
         var radius = worldState.distance
-        var phi = worldState.phi
+        var phi = superPhi//worldState.phi
         var viewState = 0 // 1 will produce a box view, not very useful, only when debugging geometry
 
         memcpy(inputBuifferPointer, &radius, MemoryLayout<Float>.size)
