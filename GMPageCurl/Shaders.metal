@@ -199,10 +199,10 @@ kernel void compute_positions(texture2d<float, access::write> transformed [[text
         return;
     }
     
-    float stepX = 2 / MODEL_WIDTH;
-    float stepY = 2 / MODEL_HEIGHT;
-    float  x = -1 + tid.x*stepX;
-    float  y = -1 + tid.y*stepY;
+    float stepX = 2 / (MODEL_WIDTH - 1);
+    float stepY = 2 / (MODEL_HEIGHT - 1);
+    float  x = -1 + (tid.x)*stepX;
+    float  y = -1 + (tid.y)*stepY;
     
     float3 position = packed_float3(x, y, 0);
     

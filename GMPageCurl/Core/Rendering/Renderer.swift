@@ -123,7 +123,6 @@ final class Renderer {
         
        
         computePositionsPassEncoder.setComputePipelineState(computeNormalsPipelineState)
-        computePositionsPassEncoder.setTexture(computedPositions, index: 0)
         computePositionsPassEncoder.setTexture(computedNormals, index: 1)
         
         computePositionsPassEncoder.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
@@ -296,9 +295,9 @@ extension Renderer {
                 vertexIndicies.append(contentsOf: [rightIdx, topIdx])
                 vertexIndicies.append(contentsOf: [rightIdx, bottomIdx])
                 
-                vertexIndicies.append(contentsOf: [leftIdx, topIdx])
-                vertexIndicies.append(contentsOf: [leftIdx, bottomIdx])
                 vertexIndicies.append(contentsOf: [rightIdx, bottomIdx])
+                vertexIndicies.append(contentsOf: [leftIdx, bottomIdx])
+                vertexIndicies.append(contentsOf: [leftIdx, topIdx])
             }
         }
     }
@@ -397,7 +396,7 @@ extension Renderer {
             depthAttachemntDescriptor.texture = depthTextureForColorPass
             depthAttachemntDescriptor.loadAction = .clear
             //depthAttachemntDescriptor.storeAction = .multisampleResolve // not available in simulator
-            depthAttachemntDescriptor.storeAction = .store
+            depthAttachemntDescriptor.storeAction = .dontCare
             depthAttachemntDescriptor.clearDepth = 1
             return depthAttachemntDescriptor
         }
