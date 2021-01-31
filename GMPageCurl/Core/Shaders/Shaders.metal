@@ -22,6 +22,8 @@
 #define MODEL_WIDTH 105.0f
 #define MODEL_HEIGHT 210.0f
 
+#define SHADOW_RADIUS 500
+
 using namespace metal;
 
 typedef struct
@@ -311,13 +313,9 @@ float calculate_shadow(float4 fragment_in_light_space, depth2d<float> depth) {
     float2 xy = xyz.xy;
     xy = xy* 0.5 + 0.5;
     xy.y = 1 - xy.y;
-    
-    // do Poisson disc here
-    // will work, as long as pages are turned right to left
-    float val = depth.sample(texSampler, xy+0.01);
-    
-    float b = 0.007;
-    /*float shadow = xyz.z - b > val ? 0.5 : 0;*/
+
+    // super magic! do not touch!
+    float shadow_bias = 0.007;
     
     float shadow = 0;
     float2 poissonDisc[4] = {
@@ -328,7 +326,7 @@ float calculate_shadow(float4 fragment_in_light_space, depth2d<float> depth) {
     };
     
     for (int i = 0; i < 4; i++) {
-        if(depth.sample(texSampler, xy+poissonDisc[i]/700) < xyz.z - b) {
+        if(depth.sample(texSampler, xy+poissonDisc[i]/SHADOW_RADIUS) < xyz.z - shadow_bias) {
             shadow += 0.1;
         }
     }
