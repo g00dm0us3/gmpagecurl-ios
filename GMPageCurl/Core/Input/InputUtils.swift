@@ -21,6 +21,8 @@ enum Input {
         /// Points to the right
         private let xAxis = CGPoint(x: 1, y: 0)
         
+        private static let minVectorLength = CGFloat(0.0001)
+        
         /// - Note: ```turnPageDistanceThreshold``` should be in (0,1] interval. Zero would mean that user had to start precisely at the right edge,
         /// and drag their finger all the way to the left, for the page to be considered turned. One would mean that as soon as user touches right edge of the page,
         /// the page is considered to be turned.
@@ -31,8 +33,13 @@ enum Input {
             self.turnPageDistanceThreshold = turnPageDistanceThreshold
         }
         
+        static func shouldTransform(_ translation: CGPoint) -> Bool {
+            return abs(translation.x) >= PanGestureTransformer.minVectorLength
+        }
+        
         /// Transforms pan gesture translation vector into parameters used for page curl rendering.
         func transform(translation: CGPoint, in bounds: CGRect) -> (phi: CGFloat, distanceFromRightEdge: CGFloat) {
+            guard abs(translation.x) >= PanGestureTransformer.minVectorLength else { fatalError("Translation vector too small") }
             let dot = translation.normalize().dot(xAxis)
             
             var rads = CGFloat(0)
@@ -46,9 +53,16 @@ enum Input {
             }
 
             let normalized = abs(translation.x/bounds.width)
-            let mul = CGFloat(translation.x < 0 ? -1 : 1)
-            let distanceFromRight = 2 + mul*normalized.rescale(0...1, newRange: 0...2)
+            let rtl = translation.x < 0
+            var distanceFromRight = CGFloat(0)
             
+            // moving rtl
+            if rtl {
+                distanceFromRight = normalized.rescale(0...1, newRange: 0...2)
+            } else {
+                distanceFromRight = 2 - normalized.rescale(0...1, newRange: 0...2)
+            }
+
             return (rads.clamp(to: -maxPhi...maxPhi), distanceFromRight.clamp(to: 0...turnPageDistanceThreshold))
         }
     }

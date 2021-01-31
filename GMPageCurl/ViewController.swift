@@ -63,10 +63,13 @@ final class ViewController: RenderingViewController {
         let velocity = gesture.velocity(in: view)
         //inputManager.panGestureChanged(translation, velocity: velocity)
         
-        let res = transformer.transform(translation: translation, in: view.bounds)
+        if Input.PanGestureTransformer.shouldTransform(translation) {
+            let res = transformer.transform(translation: translation, in: view.bounds)
+            renderer.superPhi = Float(res.phi)
+            renderer.superRadius = Float(res.distanceFromRightEdge)
+        }
         
-        renderer.superPhi = Float(res.phi)
-        renderer.superRadius = 1.5//Float(res.distanceFromRightEdge)
+        
     }
 }
 

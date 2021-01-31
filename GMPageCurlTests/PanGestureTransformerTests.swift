@@ -17,7 +17,7 @@ class PanGestureTransformerTests: XCTestCase {
         var val = transformer.transform(translation: CGPoint(x: -maxX, y: 0), in: rect)
         XCTAssertEqual(val.distanceFromRightEdge, 1.5, "Should be distance threshold")
         
-        val = transformer.transform(translation: CGPoint(x: 0, y: 0), in: rect)
+        val = transformer.transform(translation: CGPoint(x: maxX, y: 0), in: rect)
         XCTAssertEqual(val.distanceFromRightEdge, 0, "Should be distance threshold")
     }
 }
