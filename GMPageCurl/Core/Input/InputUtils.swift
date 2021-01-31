@@ -13,16 +13,16 @@ enum Input {
     struct PanGestureTransformer {
         /// Maximum angle with x-axis, at which the page can be turned
         let maxPhi: CGFloat
-        
+
         /// Maximum distance, from right, after which the page is considered to be turned
         /// Must be between 0 and 1.
         let turnPageDistanceThreshold: CGFloat
-        
+
         /// Points to the right
         private let xAxis = CGPoint(x: 1, y: 0)
-        
+
         private static let minVectorLength = CGFloat(0.0001)
-        
+
         /// - Note: ```turnPageDistanceThreshold``` should be in (0,1] interval. Zero would mean that user had to start precisely at the right edge,
         /// and drag their finger all the way to the left, for the page to be considered turned. One would mean that as soon as user touches right edge of the page,
         /// the page is considered to be turned.
@@ -32,18 +32,18 @@ enum Input {
             self.maxPhi = maxPhi
             self.turnPageDistanceThreshold = turnPageDistanceThreshold
         }
-        
+
         static func shouldTransform(_ translation: CGPoint) -> Bool {
             return abs(translation.x) >= PanGestureTransformer.minVectorLength
         }
-        
+
         /// Transforms pan gesture translation vector into parameters used for page curl rendering.
         func transform(translation: CGPoint, in bounds: CGRect) -> (phi: CGFloat, distanceFromRightEdge: CGFloat) {
             guard abs(translation.x) >= PanGestureTransformer.minVectorLength else { fatalError("Translation vector too small") }
             let dot = translation.normalize().dot(xAxis)
-            
+
             var rads = CGFloat(0)
-            
+
             if translation.x >= 0 {
                 let mul = CGFloat(translation.y > 0 ? -1 : 1)
                 rads = mul*acos(dot)
@@ -55,7 +55,7 @@ enum Input {
             let normalized = abs(translation.x/bounds.width)
             let rtl = translation.x < 0
             var distanceFromRight = CGFloat(0)
-            
+
             // moving rtl
             if rtl {
                 distanceFromRight = normalized.rescale(0...1, newRange: 0...2)

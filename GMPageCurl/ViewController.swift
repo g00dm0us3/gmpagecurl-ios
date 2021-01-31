@@ -13,7 +13,7 @@ final class ViewController: RenderingViewController {
 
     var gestureRecognizer: UIPanGestureRecognizer!
     var pinchGestureRecognizer: UIPinchGestureRecognizer!
-    
+
     private let transformer = Input.PanGestureTransformer(maxPhi: CGFloat.pi/3, turnPageDistanceThreshold: 1.5)
 
     override func viewDidLoad() {
@@ -58,7 +58,7 @@ final class ViewController: RenderingViewController {
             renderer.runPlayBack()
             return
         }
-        
+
         if gesture.state == .began {
             renderer.stopPlayBack()
         }
@@ -72,5 +72,3 @@ final class ViewController: RenderingViewController {
         }
     }
 }
-
-

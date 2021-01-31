@@ -76,7 +76,7 @@ enum MatrixUtils {
             float4(0, 0, wzScale, 0)
         ])
     }
-    
+
     static func matrix_ortho(left: Float, right: Float, bottom: Float, top: Float, near: Float, far: Float) -> simd_float4x4 {
         return simd_float4x4([
             float4(arrayLiteral: 2/(right-left), 0, 0, 0),
@@ -85,17 +85,17 @@ enum MatrixUtils {
             float4(arrayLiteral: (left+right) / (left - right), (top + bottom) / (bottom - top), near / (near - far), 1)
         ])
     }
-    
+
     static func matrix_lookat(at: simd_float3, eye: simd_float3, up: simd_float3) -> simd_float4x4 {
         let zaxis = normalize(at - eye)
         let xaxis = normalize(cross(up, zaxis))
         let yaxis = cross(zaxis, xaxis)
-        
+
         return simd_float4x4([
             float4(arrayLiteral: xaxis.x, yaxis.x, zaxis.x, 0),
             float4(arrayLiteral: xaxis.y, yaxis.y, zaxis.y, 0),
             float4(arrayLiteral: xaxis.z, yaxis.z, zaxis.z, 0),
-            float4(arrayLiteral: -dot(xaxis,eye), -dot(yaxis, eye), -dot(zaxis, eye), 1)
+            float4(arrayLiteral: -dot(xaxis, eye), -dot(yaxis, eye), -dot(zaxis, eye), 1)
         ])
     }
 
@@ -104,5 +104,5 @@ enum MatrixUtils {
             print("[ \(m[i][0]) \(m[i][1]) \(m[i][2]) \(m[i][3]) ]")
         }
     }
-    
+
 }

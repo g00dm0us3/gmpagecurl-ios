@@ -21,7 +21,7 @@ class RenderingView: UIView {
         mtlLayer.pixelFormat = MTLPixelFormat.bgra8Unorm
         mtlLayer.isOpaque = false
         isOpaque = false
-        
+
     }
 
     required init?(coder: NSCoder) {
