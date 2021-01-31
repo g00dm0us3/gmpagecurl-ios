@@ -17,7 +17,7 @@ class RenderingView: UIView {
 
         guard let mtlLayer = layer as? CAMetalLayer else { fatalError("This should be metal layer!") }
 
-        mtlLayer.device = RenderingDevice.defaultDevice
+        mtlLayer.device = DeviceWrapper.device
         mtlLayer.pixelFormat = MTLPixelFormat.bgra8Unorm
         mtlLayer.isOpaque = false
         isOpaque = false

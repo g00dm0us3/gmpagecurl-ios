@@ -13,6 +13,8 @@ final class ViewController: RenderingViewController {
 
     var gestureRecognizer: UIPanGestureRecognizer!
     var pinchGestureRecognizer: UIPinchGestureRecognizer!
+    
+    private let transformer = Input.PanGestureTransformer(maxPhi: CGFloat.pi/3, turnPageDistanceThreshold: 1.5)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,45 +54,20 @@ final class ViewController: RenderingViewController {
 
     @objc
     func move(gesture: UIPanGestureRecognizer) {
-        /*if(gesture.state == UIGestureRecognizer.State.ended) {
-            inputManager.panGestureEnded()
+        if(gesture.state == UIGestureRecognizer.State.ended) {
+            renderer.runPlayBack()
             return
         }
 
         let translation = gesture.translation(in: view)
         let velocity = gesture.velocity(in: view)
-        inputManager.panGestureChanged(translation, velocity: velocity)*/
+        //inputManager.panGestureChanged(translation, velocity: velocity)
         
-        let translation = gesture.translation(in: view)
-        let velocity = gesture.velocity(in: view)
+        let res = transformer.transform(translation: translation, in: view.bounds)
         
-        let dot = translation.normalize().dot(CGPoint(x: 1, y: 0))
-        let mul = CGFloat(translation.y < 0 ? -1 : 1)
-        let rads = mul*(CGFloat.pi-acos(dot))
-        //print(rads.rad2deg())
-        
-        if rads >= -CGFloat.pi/3 && rads <= CGFloat.pi/3 {
-            renderer.superPhi = Float(rads)
-        }
+        renderer.superPhi = Float(res.phi)
+        renderer.superRadius = 1.5//Float(res.distanceFromRightEdge)
     }
 }
 
-extension CGFloat {
-    func rad2deg() -> CGFloat {
-        return (self * 180) / CGFloat.pi
-    }
-}
 
-extension CGPoint {
-    func length() -> CGFloat {
-        return sqrt(x*x+y*y)
-    }
-    
-    func normalize() -> CGPoint {
-        return CGPoint(x: x/self.length(), y: y/self.length())
-    }
-    
-    func dot(_ vec: CGPoint) -> CGFloat {
-        return x*vec.x+y*vec.y
-    }
-}

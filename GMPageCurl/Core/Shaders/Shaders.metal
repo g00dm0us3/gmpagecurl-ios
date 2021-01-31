@@ -19,8 +19,8 @@
 #define NDT_MAX_COORD 1
 #define NDT_MIN_COORD -1
 
-#define MODEL_WIDTH 100.0f
-#define MODEL_HEIGHT 200.0f
+#define MODEL_WIDTH 105.0f
+#define MODEL_HEIGHT 210.0f
 
 using namespace metal;
 
@@ -191,6 +191,9 @@ inline float4 calculate_position(packed_float3 position, float phi, float xCoord
     return float4(axisToBoxVec, 1);
 }
 
+// MARK: Computing shaders
+
+/// Computes vertex positions, based on useer input (phi, distance from right view border)
 kernel void compute_positions(texture2d<float, access::write> transformed [[texture(0)]],
                               constant Input &input[[buffer(0)]],
                               uint2 tid [[thread_position_in_grid]])
@@ -211,6 +214,7 @@ kernel void compute_positions(texture2d<float, access::write> transformed [[text
     transformed.write(float4(pos.xyz, 1), tid);
 }
 
+/// Computes normals for vertext positions
 kernel void compute_normals(const texture2d<float> vertices [[texture(0)]],
                             const texture2d<float, access::write> normals[[texture(1)]],
                             uint2 tid [[thread_position_in_grid]])
@@ -255,6 +259,26 @@ kernel void compute_normals(const texture2d<float> vertices [[texture(0)]],
     normals.write(float4(float3(point.x, point.y, n.z), 1), tid);
 }
 
+// MARK: Shadow pass shaders
+
+/// Outputs vertext positions from computing shaders in light space.
+vertex float4 vertex_pos_only(texture2d<float> tex_vertices [[texture(0)]],
+                                 texture2d<float> tex_normals [[texture(1)]],
+                                 constant Uniforms &uniforms [[buffer(0)]],
+                                 constant VertexIndex *tex_indicies [[buffer(1)]],
+                                constant ConstantUniforms &constUniforms[[buffer(2)]],
+                                 uint vid [[vertex_id]])
+{
+    uint2 tex_coord = uint2(tex_indicies[vid].coords.xy);
+    float3 position = packed_float3(tex_vertices.read(tex_coord).xyz);
+
+    float4 pos = float4(position.xyz, 1);
+
+    return constUniforms.lightMatrix * uniforms.modelMatrix * pos;
+}
+
+// MARK: Color pass shaders
+
 vertex VertexOut vertex_function(texture2d<float> tex_vertices [[texture(0)]],
                                  texture2d<float> tex_normals [[texture(1)]],
                                  constant Uniforms &uniforms [[buffer(0)]],
@@ -280,6 +304,7 @@ vertex VertexOut vertex_function(texture2d<float> tex_vertices [[texture(0)]],
     return out;
 }
 
+/// Calculates shadow for current fragment, based on the output of a shadow pass
 float calculate_shadow(float4 fragment_in_light_space, depth2d<float> depth) {
     constexpr sampler texSampler(coord::normalized, filter::linear, address::clamp_to_edge, compare_func::less);
     float3 xyz = fragment_in_light_space.xyz / fragment_in_light_space.w;
@@ -297,7 +322,7 @@ float calculate_shadow(float4 fragment_in_light_space, depth2d<float> depth) {
     return shadow;
 }
 
-// make this color / light shader
+/// Calculates color of a fragment, based on shadow pass, normals.
 fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> depth [[texture(0)]])
 {
     float3 normal = normalize(in.normal);
@@ -319,19 +344,4 @@ fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> dept
     
     /// - todo: clamp it so, that pitch black is no longer a valid color,  but the top is not above any of the two (light_color / and wtv.)
     return float4((1-val)*diffuse, 1);
-}
-
-vertex float4 vertex_pos_only(texture2d<float> tex_vertices [[texture(0)]],
-                                 texture2d<float> tex_normals [[texture(1)]],
-                                 constant Uniforms &uniforms [[buffer(0)]],
-                                 constant VertexIndex *tex_indicies [[buffer(1)]],
-                                constant ConstantUniforms &constUniforms[[buffer(2)]],
-                                 uint vid [[vertex_id]])
-{
-    uint2 tex_coord = uint2(tex_indicies[vid].coords.xy);
-    float3 position = packed_float3(tex_vertices.read(tex_coord).xyz);
-
-    float4 pos = float4(position.xyz, 1);
-
-    return constUniforms.lightMatrix * uniforms.modelMatrix * pos;
 }

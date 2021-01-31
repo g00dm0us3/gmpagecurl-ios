@@ -9,7 +9,7 @@
 import Foundation
 import simd
 
-struct MatrixUtils {
+enum MatrixUtils {
 
     static var matrix4x4Size: Int {
         return MemoryLayout<simd_float4x4>.size

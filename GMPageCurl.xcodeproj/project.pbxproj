@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E50F332D25C68B2200E0C5B2 /* DeviceWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50F332C25C68B2200E0C5B2 /* DeviceWrapper.swift */; };
+		E50F333625C68C3B00E0C5B2 /* CGPointExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50F333525C68C3B00E0C5B2 /* CGPointExtensions.swift */; };
+		E50F333725C68C3B00E0C5B2 /* CGPointExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50F333525C68C3B00E0C5B2 /* CGPointExtensions.swift */; };
+		E50F333C25C68CCA00E0C5B2 /* InputUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50F333B25C68CCA00E0C5B2 /* InputUtils.swift */; };
+		E50F333D25C68CCA00E0C5B2 /* InputUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50F333B25C68CCA00E0C5B2 /* InputUtils.swift */; };
+		E50F334525C6A11200E0C5B2 /* PanGestureTransformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50F334425C6A11200E0C5B2 /* PanGestureTransformerTests.swift */; };
 		E514A5A224BF0AD800ED988D /* RenderingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E514A5A124BF0AD800ED988D /* RenderingView.swift */; };
 		E564CFCD25C461E2002D9475 /* WorldState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E564CFCC25C461E2002D9475 /* WorldState.swift */; };
 		E5AB192022725A17007521F5 /* MatrixUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5AB191F22725A17007521F5 /* MatrixUtils.swift */; };
@@ -15,11 +21,9 @@
 		E5C4CEB2223BA7B70077B654 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E5C4CEB0223BA7B70077B654 /* Main.storyboard */; };
 		E5C4CEB4223BA7B90077B654 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E5C4CEB3223BA7B90077B654 /* Assets.xcassets */; };
 		E5C4CEB7223BA7B90077B654 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E5C4CEB5223BA7B90077B654 /* LaunchScreen.storyboard */; };
-		E5C4CEC2223BA7B90077B654 /* PageCurlTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C4CEC1223BA7B90077B654 /* PageCurlTests.swift */; };
 		E5C4CECE223BA7CD0077B654 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5C4CECD223BA7CD0077B654 /* Metal.framework */; };
 		E5C4CED0223BBBF40077B654 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = E5C4CECF223BBBF40077B654 /* Shaders.metal */; };
 		E5C75319223D0F15004D46CA /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C75318223D0F15004D46CA /* Renderer.swift */; };
-		E5C7531B223D1207004D46CA /* RenderingDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C7531A223D1207004D46CA /* RenderingDevice.swift */; };
 		E5C75322223D1BAE004D46CA /* RenderingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C75321223D1BAE004D46CA /* RenderingViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -34,6 +38,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E50F332C25C68B2200E0C5B2 /* DeviceWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceWrapper.swift; sourceTree = "<group>"; };
+		E50F333525C68C3B00E0C5B2 /* CGPointExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGPointExtensions.swift; sourceTree = "<group>"; };
+		E50F333B25C68CCA00E0C5B2 /* InputUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputUtils.swift; sourceTree = "<group>"; };
+		E50F334425C6A11200E0C5B2 /* PanGestureTransformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanGestureTransformerTests.swift; sourceTree = "<group>"; };
 		E514A5A124BF0AD800ED988D /* RenderingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingView.swift; sourceTree = "<group>"; };
 		E564CFCC25C461E2002D9475 /* WorldState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldState.swift; sourceTree = "<group>"; };
 		E5AB191F22725A17007521F5 /* MatrixUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixUtils.swift; sourceTree = "<group>"; };
@@ -45,12 +53,10 @@
 		E5C4CEB6223BA7B90077B654 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E5C4CEB8223BA7B90077B654 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E5C4CEBD223BA7B90077B654 /* GMPageCurlTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GMPageCurlTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		E5C4CEC1223BA7B90077B654 /* PageCurlTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageCurlTests.swift; sourceTree = "<group>"; };
 		E5C4CEC3223BA7B90077B654 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E5C4CECD223BA7CD0077B654 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		E5C4CECF223BBBF40077B654 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		E5C75318223D0F15004D46CA /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
-		E5C7531A223D1207004D46CA /* RenderingDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingDevice.swift; sourceTree = "<group>"; };
 		E5C75321223D1BAE004D46CA /* RenderingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -73,6 +79,32 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E50F332925C688FB00E0C5B2 /* Shaders */ = {
+			isa = PBXGroup;
+			children = (
+				E5C4CECF223BBBF40077B654 /* Shaders.metal */,
+			);
+			path = Shaders;
+			sourceTree = "<group>";
+		};
+		E50F333225C68BEC00E0C5B2 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				E50F332C25C68B2200E0C5B2 /* DeviceWrapper.swift */,
+				E5AB191F22725A17007521F5 /* MatrixUtils.swift */,
+				E50F333525C68C3B00E0C5B2 /* CGPointExtensions.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		E50F333A25C68CB200E0C5B2 /* Input */ = {
+			isa = PBXGroup;
+			children = (
+				E50F333B25C68CCA00E0C5B2 /* InputUtils.swift */,
+			);
+			path = Input;
+			sourceTree = "<group>";
+		};
 		E5C4CEA0223BA7B70077B654 = {
 			isa = PBXGroup;
 			children = (
@@ -96,7 +128,6 @@
 			isa = PBXGroup;
 			children = (
 				E5C75317223D0EFE004D46CA /* Core */,
-				E5C4CECF223BBBF40077B654 /* Shaders.metal */,
 				E5C4CEAC223BA7B70077B654 /* AppDelegate.swift */,
 				E5C4CEAE223BA7B70077B654 /* ViewController.swift */,
 				E5C4CEB0223BA7B70077B654 /* Main.storyboard */,
@@ -110,8 +141,8 @@
 		E5C4CEC0223BA7B90077B654 /* GMPageCurlTests */ = {
 			isa = PBXGroup;
 			children = (
-				E5C4CEC1223BA7B90077B654 /* PageCurlTests.swift */,
 				E5C4CEC3223BA7B90077B654 /* Info.plist */,
+				E50F334425C6A11200E0C5B2 /* PanGestureTransformerTests.swift */,
 			);
 			path = GMPageCurlTests;
 			sourceTree = "<group>";
@@ -127,8 +158,10 @@
 		E5C75317223D0EFE004D46CA /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				E50F333A25C68CB200E0C5B2 /* Input */,
+				E50F333225C68BEC00E0C5B2 /* Utils */,
+				E50F332925C688FB00E0C5B2 /* Shaders */,
 				E5C75320223D1B84004D46CA /* Rendering */,
-				E5AB191F22725A17007521F5 /* MatrixUtils.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -136,7 +169,6 @@
 		E5C75320223D1B84004D46CA /* Rendering */ = {
 			isa = PBXGroup;
 			children = (
-				E5C7531A223D1207004D46CA /* RenderingDevice.swift */,
 				E5C75318223D0F15004D46CA /* Renderer.swift */,
 				E5C75321223D1BAE004D46CA /* RenderingViewController.swift */,
 				E514A5A124BF0AD800ED988D /* RenderingView.swift */,
@@ -248,8 +280,10 @@
 			files = (
 				E5C4CED0223BBBF40077B654 /* Shaders.metal in Sources */,
 				E5C4CEAF223BA7B70077B654 /* ViewController.swift in Sources */,
+				E50F333625C68C3B00E0C5B2 /* CGPointExtensions.swift in Sources */,
+				E50F333C25C68CCA00E0C5B2 /* InputUtils.swift in Sources */,
 				E5C4CEAD223BA7B70077B654 /* AppDelegate.swift in Sources */,
-				E5C7531B223D1207004D46CA /* RenderingDevice.swift in Sources */,
+				E50F332D25C68B2200E0C5B2 /* DeviceWrapper.swift in Sources */,
 				E5C75322223D1BAE004D46CA /* RenderingViewController.swift in Sources */,
 				E5C75319223D0F15004D46CA /* Renderer.swift in Sources */,
 				E5AB192022725A17007521F5 /* MatrixUtils.swift in Sources */,
@@ -262,7 +296,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E5C4CEC2223BA7B90077B654 /* PageCurlTests.swift in Sources */,
+				E50F333725C68C3B00E0C5B2 /* CGPointExtensions.swift in Sources */,
+				E50F333D25C68CCA00E0C5B2 /* InputUtils.swift in Sources */,
+				E50F334525C6A11200E0C5B2 /* PanGestureTransformerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -457,7 +493,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = D3QFXJL55Q;
-				INFOPLIST_FILE = PageCurlTests/Info.plist;
+				INFOPLIST_FILE = GMPageCurlTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -478,7 +514,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = D3QFXJL55Q;
-				INFOPLIST_FILE = PageCurlTests/Info.plist;
+				INFOPLIST_FILE = GMPageCurlTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

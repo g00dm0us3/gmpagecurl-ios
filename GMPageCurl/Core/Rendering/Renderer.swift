@@ -25,12 +25,13 @@ final class Renderer {
     fileprivate var vertexIndicies: [Int32] = []
     
     // should correspond to the #defines in shader
-    fileprivate let modelWidth = 100
-    fileprivate let modelHeight = 200
+    fileprivate let modelWidth = 105
+    fileprivate let modelHeight = 210
     
     private var defaultLibrary: MTLLibrary!
+
     private var device: MTLDevice {
-        return RenderingDevice.defaultDevice
+        return DeviceWrapper.device
     }
     
     private let state: RendererState
@@ -49,12 +50,15 @@ final class Renderer {
     weak var underlyingView: UIView?
     
     var superPhi: Float = 0
+    var superRadius: Float = 0
+    
+    private var isRunningPlayBack = false
     
     init(_ view: UIView, underlyingView: UIView) {
-        state = RendererState(RenderingDevice.defaultDevice, modelWidth: modelWidth, modelHeight: modelHeight)
+        state = RendererState(DeviceWrapper.device, modelWidth: modelWidth, modelHeight: modelHeight)
         worldState = WorldState()
         renderingView = view
-        defaultLibrary = RenderingDevice.defaultDevice.makeDefaultLibrary()
+        defaultLibrary = device.makeDefaultLibrary()
         self.underlyingView = underlyingView
         
         cadDisplayLink = CADisplayLink(target: self, selector: #selector(redraw))
@@ -73,6 +77,10 @@ final class Renderer {
         
     }
     
+    func runPlayBack() {
+        isRunningPlayBack = true
+    }
+    
     @objc
     private func redraw() {
         guard let mtlLayer = renderingView?.layer as? CAMetalLayer else { fatalError("This should be rendering layer!") }
@@ -86,6 +94,18 @@ final class Renderer {
             //cadDisplayLink.isPaused = true
             //underlyingView?.setNeedsDisplay()
         }
+        
+        let playBackStep = Float(0.09)
+        if isRunningPlayBack {
+            if superRadius - playBackStep <= 0 {
+                superRadius = 0
+                superPhi = 0
+                isRunningPlayBack = false
+            } else {
+                superRadius -= playBackStep
+            }
+        }
+        
         fillBuffers()
         
         let drawable = self.drawable(from: layer)
@@ -229,7 +249,7 @@ final class Renderer {
 
         guard let inputBuifferPointer = inputBuffer?.contents() else { fatalError("Couldn't access buffer") }
 
-        var radius = worldState.distance
+        var radius = superRadius//worldState.distance
         var phi = superPhi//worldState.phi
         var viewState = 0 // 1 will produce a box view, not very useful, only when debugging geometry
 
@@ -239,9 +259,6 @@ final class Renderer {
     }
 
     private func makeBuffers() {
-
-        let device = RenderingDevice.defaultDevice
-
         if uniformBuffer == nil {
             let totalSz = 2*MatrixUtils.matrix4x4Size
 
@@ -388,7 +405,7 @@ extension Renderer {
                 regularTextureDesc.mipmapLevelCount = 1
                 regularTextureDesc.textureType = .type2D
                 regularTextureDesc.usage = [.shaderRead, .renderTarget]
-                depthTextureForColorPass = RenderingDevice.defaultDevice.makeTexture(descriptor: regularTextureDesc)
+                depthTextureForColorPass = device.makeTexture(descriptor: regularTextureDesc)
             }
             
             //depthAttachemntDescriptor.resolveTexture = depthTexture
