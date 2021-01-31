@@ -317,7 +317,21 @@ float calculate_shadow(float4 fragment_in_light_space, depth2d<float> depth) {
     float val = depth.sample(texSampler, xy+0.01);
     
     float b = 0.007;
-    float shadow = xyz.z - b > val ? 0.5 : 0;
+    /*float shadow = xyz.z - b > val ? 0.5 : 0;*/
+    
+    float shadow = 0;
+    float2 poissonDisc[4] = {
+        float2( -0.94201624, -0.39906216 ),
+        float2( 0.94558609, -0.76890725 ),
+        float2( -0.094184101, -0.92938870 ),
+        float2( 0.34495938, 0.29387760 )
+    };
+    
+    for (int i = 0; i < 4; i++) {
+        if(depth.sample(texSampler, xy+poissonDisc[i]/700) < xyz.z - b) {
+            shadow += 0.1;
+        }
+    }
     
     return shadow;
 }
