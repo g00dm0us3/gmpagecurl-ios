@@ -81,6 +81,10 @@ final class Renderer {
         isRunningPlayBack = true
     }
     
+    func stopPlayBack() {
+        isRunningPlayBack = false
+    }
+    
     @objc
     private func redraw() {
         guard let mtlLayer = renderingView?.layer as? CAMetalLayer else { fatalError("This should be rendering layer!") }

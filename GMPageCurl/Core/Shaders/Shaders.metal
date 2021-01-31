@@ -327,13 +327,13 @@ fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> dept
 {
     float3 normal = normalize(in.normal);
     
-    float3 light_pos = float3(0.3,0.3,1);
+    float3 light_pos = float3(0.0,0.0,0.5);
     
     /// @note: this happens, if there is a roof (normal points downward from there, dot < 0, roof is rendered pitch black)
     float3 light_color = float3(1,1,1);
     if (dot(normal, light_pos) < 0) {
         normal = float3(normal.x, normal.y, -normal.z);
-        light_color = float3(0.9, 0.8, 0.8);
+        light_color = float3(1, 1, 1);
     }
 
     float3 light_direction = normalize(light_pos);
@@ -344,4 +344,5 @@ fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> dept
     
     /// - todo: clamp it so, that pitch black is no longer a valid color,  but the top is not above any of the two (light_color / and wtv.)
     return float4((1-val)*diffuse, 1);
+    
 }
