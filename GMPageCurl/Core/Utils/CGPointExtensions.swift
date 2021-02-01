@@ -14,8 +14,9 @@ extension CGFloat {
         return (self * 180) / CGFloat.pi
     }
 
+    @inline(__always)
     func rescale(_ oldRange: ClosedRange<CGFloat>, newRange: ClosedRange<CGFloat>) -> CGFloat {
-        let clamped = self.clamp(to: oldRange)
+        let clamped = clamp(to: oldRange)
 
         let k = (newRange.upperBound-newRange.lowerBound)/(oldRange.upperBound-oldRange.lowerBound)
         let x = (clamped - oldRange.lowerBound)
@@ -24,27 +25,24 @@ extension CGFloat {
         return k*x+b
     }
 
+    @inline(__always)
     func clamp(to range: ClosedRange<CGFloat>) -> CGFloat {
-        var clamped = self
-        if clamped < range.lowerBound {
-            clamped = range.lowerBound
-        } else if clamped > range.upperBound {
-            clamped = range.upperBound
-        }
-
-        return clamped
+        return Swift.min(Swift.max(self, range.lowerBound), range.upperBound)
     }
 }
 
 extension CGPoint {
+    @inline(__always)
     func length() -> CGFloat {
         return sqrt(x*x+y*y)
     }
 
+    @inline(__always)
     func normalize() -> CGPoint {
         return CGPoint(x: x/self.length(), y: y/self.length())
     }
 
+    @inline(__always)
     func dot(_ vec: CGPoint) -> CGFloat {
         return x*vec.x+y*vec.y
     }

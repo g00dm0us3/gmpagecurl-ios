@@ -16,6 +16,7 @@
 		E514A5A224BF0AD800ED988D /* RenderingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E514A5A124BF0AD800ED988D /* RenderingView.swift */; };
 		E564CFCD25C461E2002D9475 /* WorldState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E564CFCC25C461E2002D9475 /* WorldState.swift */; };
 		E5AB192022725A17007521F5 /* MatrixUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5AB191F22725A17007521F5 /* MatrixUtils.swift */; };
+		E5BCEC7125C7E0DB009E73CB /* RenderingContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5BCEC7025C7E0DB009E73CB /* RenderingContext.swift */; };
 		E5C4CEAD223BA7B70077B654 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C4CEAC223BA7B70077B654 /* AppDelegate.swift */; };
 		E5C4CEAF223BA7B70077B654 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C4CEAE223BA7B70077B654 /* ViewController.swift */; };
 		E5C4CEB2223BA7B70077B654 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E5C4CEB0223BA7B70077B654 /* Main.storyboard */; };
@@ -45,6 +46,7 @@
 		E514A5A124BF0AD800ED988D /* RenderingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingView.swift; sourceTree = "<group>"; };
 		E564CFCC25C461E2002D9475 /* WorldState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldState.swift; sourceTree = "<group>"; };
 		E5AB191F22725A17007521F5 /* MatrixUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixUtils.swift; sourceTree = "<group>"; };
+		E5BCEC7025C7E0DB009E73CB /* RenderingContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingContext.swift; sourceTree = "<group>"; };
 		E5C4CEA9223BA7B70077B654 /* GMPageCurl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GMPageCurl.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E5C4CEAC223BA7B70077B654 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E5C4CEAE223BA7B70077B654 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -90,19 +92,12 @@
 		E50F333225C68BEC00E0C5B2 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				E50F333B25C68CCA00E0C5B2 /* InputUtils.swift */,
 				E50F332C25C68B2200E0C5B2 /* DeviceWrapper.swift */,
 				E5AB191F22725A17007521F5 /* MatrixUtils.swift */,
 				E50F333525C68C3B00E0C5B2 /* CGPointExtensions.swift */,
 			);
 			path = Utils;
-			sourceTree = "<group>";
-		};
-		E50F333A25C68CB200E0C5B2 /* Input */ = {
-			isa = PBXGroup;
-			children = (
-				E50F333B25C68CCA00E0C5B2 /* InputUtils.swift */,
-			);
-			path = Input;
 			sourceTree = "<group>";
 		};
 		E5C4CEA0223BA7B70077B654 = {
@@ -158,7 +153,6 @@
 		E5C75317223D0EFE004D46CA /* Core */ = {
 			isa = PBXGroup;
 			children = (
-				E50F333A25C68CB200E0C5B2 /* Input */,
 				E50F333225C68BEC00E0C5B2 /* Utils */,
 				E50F332925C688FB00E0C5B2 /* Shaders */,
 				E5C75320223D1B84004D46CA /* Rendering */,
@@ -173,6 +167,7 @@
 				E5C75321223D1BAE004D46CA /* RenderingViewController.swift */,
 				E514A5A124BF0AD800ED988D /* RenderingView.swift */,
 				E564CFCC25C461E2002D9475 /* WorldState.swift */,
+				E5BCEC7025C7E0DB009E73CB /* RenderingContext.swift */,
 			);
 			path = Rendering;
 			sourceTree = "<group>";
@@ -282,6 +277,7 @@
 				E5C4CEAF223BA7B70077B654 /* ViewController.swift in Sources */,
 				E50F333625C68C3B00E0C5B2 /* CGPointExtensions.swift in Sources */,
 				E50F333C25C68CCA00E0C5B2 /* InputUtils.swift in Sources */,
+				E5BCEC7125C7E0DB009E73CB /* RenderingContext.swift in Sources */,
 				E5C4CEAD223BA7B70077B654 /* AppDelegate.swift in Sources */,
 				E50F332D25C68B2200E0C5B2 /* DeviceWrapper.swift in Sources */,
 				E5C75322223D1BAE004D46CA /* RenderingViewController.swift in Sources */,

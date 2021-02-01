@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CoreGraphics
 import simd
 
 enum MatrixUtils {
@@ -104,5 +105,16 @@ enum MatrixUtils {
             print("[ \(m[i][0]) \(m[i][1]) \(m[i][2]) \(m[i][3]) ]")
         }
     }
+    
+    /// Builds a  world matrix, given rotation around x, y axes and scale
+    /// - Note: for debug purposes only.
+    static func worldMatrix(thetaX: CGFloat, thetaY: CGFloat, scale: CGFloat) -> simd_float4x4 {
+        let translation = MatrixUtils.matrix4x4Translate(t: simd_float3(arrayLiteral: 0, 0, -1.1))
+        let scaleMatrix = MatrixUtils.matrix4x4Scale(scale: simd_float3(arrayLiteral: Float(scale), Float(scale), Float(scale)))
 
+        let rotationMatrixX = MatrixUtils.matrix4x4RotateAroundX(theta: Float(thetaX))
+        let rotationMatrixY = MatrixUtils.matrix4x4RotateAroundY(theta: Float(thetaY))
+
+        return translation*scaleMatrix*rotationMatrixX*rotationMatrixY
+    }
 }

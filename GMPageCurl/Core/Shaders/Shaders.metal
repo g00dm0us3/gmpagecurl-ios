@@ -22,7 +22,7 @@
 #define MODEL_WIDTH 105.0f
 #define MODEL_HEIGHT 210.0f
 
-#define SHADOW_RADIUS 500
+#define SHADOW_RADIUS 350
 
 using namespace metal;
 
@@ -339,7 +339,7 @@ fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> dept
 {
     float3 normal = normalize(in.normal);
     
-    float3 light_pos = float3(0.0,0.0,0.5);
+    float3 light_pos = normalize(float3(0.0,0.0,0.1));
     
     /// @note: this happens, if there is a roof (normal points downward from there, dot < 0, roof is rendered pitch black)
     float3 light_color = float3(1,1,1);
