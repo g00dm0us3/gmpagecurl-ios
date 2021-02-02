@@ -55,20 +55,19 @@ final class ViewController: RenderingViewController {
     @objc
     func move(gesture: UIPanGestureRecognizer) {
         if(gesture.state == UIGestureRecognizer.State.ended) {
-            renderer.runPlayBack()
+            renderingView.animateFlipBack()
             return
         }
 
         if gesture.state == .began {
-            renderer.stopPlayBack()
+            //renderer.stopPlayBack()
         }
 
         let translation = gesture.translation(in: view)
 
         if PanGestureTransformer.shouldTransform(translation) {
             let res = transformer.transform(translation: translation, in: view.bounds)
-            renderer.superPhi = res.phi
-            renderer.superRadius = res.distanceFromRightEdge
+            renderingView.curlParams = CurlParams(phi: res.phi, delta: res.distanceFromRightEdge)
         }
     }
 }

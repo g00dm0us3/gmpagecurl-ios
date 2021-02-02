@@ -10,13 +10,12 @@ import Foundation
 import UIKit
 
 class RenderingViewController: UIViewController {
-    var renderer: CurlRenderer!
-    var renderingView: RenderingView!
+    var renderingView: CurlRenderingView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        renderingView = RenderingView(frame: CGRect.zero)
+        renderingView = CurlRenderingView(frame: CGRect.zero)
         renderingView.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = .blue
         view.addSubview(renderingView)
@@ -25,7 +24,9 @@ class RenderingViewController: UIViewController {
         renderingView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
         renderingView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         renderingView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-
-        renderer = CurlRenderer(renderingView)
+    }
+    
+    override func viewDidLayoutSubviews() {
+        renderingView.setNeedsDisplay()
     }
 }
