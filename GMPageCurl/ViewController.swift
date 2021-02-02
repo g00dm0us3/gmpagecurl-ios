@@ -11,10 +11,10 @@ import UIKit
 /// For testing
 class ViewController: UIViewController {
     private var renderingView: CurlRenderingView!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         renderingView = CurlRenderingView(frame: CGRect.zero)
         renderingView.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = .blue
@@ -24,14 +24,14 @@ class ViewController: UIViewController {
         renderingView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
         renderingView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         renderingView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-        
+
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Show Image", style: .plain, target: self, action: #selector(showImageTap))
     }
-    
+
     @objc
     private func showImageTap() {
         let renderer = UIGraphicsImageRenderer(size: renderingView.frame.size)
-        
+
         let view1 = UIView(frame: CGRect(origin: .zero, size: CGSize(width: view.bounds.width, height: view.bounds.height)))
         view1.backgroundColor = .white
         let label = UILabel(frame: CGRect(x: 100, y: 100, width: 100, height: 20))
@@ -45,8 +45,8 @@ class ViewController: UIViewController {
         present(vc, animated: true, completion: nil)
         vc.setImage(image)
     }
-    
+
     override func viewDidLayoutSubviews() {
-        
+
     }
 }

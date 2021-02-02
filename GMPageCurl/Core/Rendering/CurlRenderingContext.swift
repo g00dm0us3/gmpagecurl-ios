@@ -28,15 +28,14 @@ internal final class CurlRenderingContext {
     private(set) var computedPositions: MTLTexture! // positions textures
     private(set) var computedNormals: MTLTexture!
     private(set) var viewTexture: MTLTexture!
-    
+
     private(set) var inputBuffer: MTLBuffer
     private(set) var uniformBuffer: MTLBuffer
     private(set) var constantUniformBuffer: MTLBuffer
     private(set) var vertexIndexBuffer: MTLBuffer
-    
+
     let vertexIndiciesCount: Int
     /// Constant
-   
 
     /// Transient
 
@@ -59,17 +58,17 @@ internal final class CurlRenderingContext {
             didUpdateDrawableSize = true
         }
     }
-    
+
     private var modelSize: CGSize
-    
+
     private var perspectiveMatrix: simd_float4x4 = simd_float4x4()
     private var lightMatrix: simd_float4x4 = simd_float4x4()
 
     private var worldMatrix: simd_float4x4 = simd_float4x4()
     private var lightModelMatrix: simd_float3x3 = simd_float3x3()
-    
+
     private var commandQueue: MTLCommandQueue
-    
+
     private let defaultLibrary: MTLLibrary
 
     init(_ device: MTLDevice, modelWidth: Int, modelHeight: Int) {
@@ -77,10 +76,10 @@ internal final class CurlRenderingContext {
         self.commandQueue = self.device.makeCommandQueue()!
         self.modelSize = CGSize(width: modelWidth, height: modelHeight)
         self.defaultLibrary = device.makeDefaultLibrary()!
-        
+
         var totalSz = 2*MatrixUtils.matrix4x4Size
         uniformBuffer = CurlRenderingContext.makeBuffer(totalSz, device: device)
-        
+
         totalSz = 2*MatrixUtils.matrix4x4Size
         constantUniformBuffer = CurlRenderingContext.makeBuffer(totalSz, device: device)
 
@@ -90,7 +89,7 @@ internal final class CurlRenderingContext {
         vertexIndiciesCount =  CurlRenderingContext.vertexIndiciesCount(sheetSize: CGSize(width: modelWidth, height: modelHeight))
         let dataSize = vertexIndiciesCount * MemoryLayout<Int32>.size
         vertexIndexBuffer = CurlRenderingContext.makeBuffer(dataSize, device: device)
-        
+
         library = device.makeDefaultLibrary()!
         self.computePositionsPipelineState = createKernelPipelineState("compute_positions")
         self.computeNormalsPipelineState = createKernelPipelineState("compute_normals")
@@ -110,7 +109,7 @@ internal final class CurlRenderingContext {
 
         computedPositions = makeOutputComputeTexture(pixelFormat: .rgba32Float, width: modelWidth, height: modelHeight)
         computedNormals = makeOutputComputeTexture(pixelFormat: .rgba32Float, width: modelWidth, height: modelHeight)
-        
+
         initMatrices()
         fillConstantBuffers()
     }
@@ -127,14 +126,14 @@ internal final class CurlRenderingContext {
         depthAttachmentDescriptorForColorPass = buildDepthAttachmentDescriptorForColorPass()
         depthAttachemntDescriptorForShadowPass = buildDepthAttachmentDescriptorForShadowPass()
         didUpdateDrawableSize = false
-        
+
         let textureLoader = MTKTextureLoader(device: device)
         viewTexture = try! textureLoader.newTexture(cgImage: viewImage.cgImage!, options: nil)
         fillCurlParamsBuffer(curlParams: params)
 
         return commandQueue.makeCommandBuffer()!
     }
-    
+
     // MARK: Private Interface
     private func initMatrices() {
         perspectiveMatrix = MatrixUtils.matrix_ortho(left: -1, right: 1, bottom: -1, top: 1, near: 1, far: -1)//MatrixUtils.matrix_perspective(aspect: 1, fovy: 90.0, near: 0.1, far: 100)
@@ -145,30 +144,30 @@ internal final class CurlRenderingContext {
 
         worldMatrix = MatrixUtils.identityMatrix4x4
         //worldMatrix = modeInput.scaled(1)
-        
+
         lightModelMatrix = simd_float3x3([
             simd_float3(worldMatrix[0][0], worldMatrix[0][1], worldMatrix[0][2]),
             simd_float3(worldMatrix[1][0], worldMatrix[1][1], worldMatrix[1][2]),
             simd_float3(worldMatrix[2][0], worldMatrix[2][1], worldMatrix[2][2])]).inverse.transpose
     }
-    
+
     private func fillConstantBuffers() {
         var lightMatrix = self.lightMatrix
         var perspectiveMatrix = self.perspectiveMatrix
 
         memcpy(constantUniformBuffer.contents(), &lightMatrix, MatrixUtils.matrix4x4Size)
         memcpy(constantUniformBuffer.contents() + MatrixUtils.matrix4x4Size, &perspectiveMatrix, MatrixUtils.matrix4x4Size)
-        
+
         var worldMatrix = self.worldMatrix
         var lightModelMatrix = self.lightModelMatrix
-        
+
         memcpy(uniformBuffer.contents(), &worldMatrix, MatrixUtils.matrix4x4Size)
         memcpy(uniformBuffer.contents() + MatrixUtils.matrix4x4Size, &lightModelMatrix, MatrixUtils.matrix4x4Size)
-        
+
         var vertexIndiciesArray = computeVertexIndicies(sheetSize: modelSize)
         memcpy(vertexIndexBuffer.contents(), &vertexIndiciesArray, vertexIndiciesCount*MemoryLayout<Int32>.size)
     }
-    
+
     private func fillCurlParamsBuffer(curlParams: CurlParams) {
         let inputBufferPointer = inputBuffer.contents()
 
@@ -264,7 +263,7 @@ internal final class CurlRenderingContext {
 
         return try device.makeRenderPipelineState(descriptor: pipelineStateDescriptor)
     }
-    
+
     private func makeOutputComputeTexture(pixelFormat: MTLPixelFormat, width: Int, height: Int) -> MTLTexture {
         let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: pixelFormat, width: width, height: height, mipmapped: false)
 
@@ -282,17 +281,17 @@ extension CurlRenderingContext {
         guard let buffer = device.makeBuffer(length: size, options: []) else { fatalError("Couldn't create a uniform buffer") }
         return buffer
     }
-    
+
     fileprivate static func vertexIndiciesCount(sheetSize: CGSize) -> Int {
         return 2*6*Int(sheetSize.height-1)*Int(sheetSize.width - 1)
     }
-    
+
     fileprivate func computeVertexIndicies(sheetSize: CGSize) -> [Int32] {
         let modelHeight = Int(sheetSize.height)
         let modelWidth = Int(sheetSize.width)
-        
+
         var vertexIndicies = [Int32]()
-        
+
         for iiY in 0..<modelHeight-1 {
             for iiX in 0..<modelWidth-1 {
                 let topIdx = Int32(iiY)
@@ -309,7 +308,7 @@ extension CurlRenderingContext {
                 vertexIndicies.append(contentsOf: [leftIdx, topIdx])
             }
         }
-        
+
         return vertexIndicies
     }
 }

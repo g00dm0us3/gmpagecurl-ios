@@ -105,7 +105,7 @@ enum MatrixUtils {
             print("[ \(m[i][0]) \(m[i][1]) \(m[i][2]) \(m[i][3]) ]")
         }
     }
-    
+
     /// Builds a  world matrix, given rotation around x, y axes and scale
     /// - Note: for debug purposes only.
     static func worldMatrix(thetaX: CGFloat, thetaY: CGFloat, scale: CGFloat) -> simd_float4x4 {

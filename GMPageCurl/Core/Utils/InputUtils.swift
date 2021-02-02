@@ -65,7 +65,7 @@ struct PanGestureTransformer {
 
         return CurlParams(phi: rads.clamp(to: -maxPhi...maxPhi), delta: delta.clamp(to: 0...turnPageDistanceThreshold))
     }
-    
+
     /// Transofrms translation vector to the rotation angples around x and y axes.
     /// - Note: left for debug purposes.
     func debugTransform(translation: CGPoint, lastThetaX: CGFloat, lastThetaY: CGFloat, in bounds: CGRect) -> (thetaX: CGFloat, thataY: CGFloat) {
@@ -77,7 +77,7 @@ struct PanGestureTransformer {
 
         var thetaX = (x/maxX)*2*CGFloat.pi
         var thetaY = (y/maxY)*2*CGFloat.pi
-        
+
         func congruentAngle(_ radians: CGFloat) -> CGFloat {
             let numberOfFullRotations = radians / (2*CGFloat.pi)
 
@@ -86,7 +86,7 @@ struct PanGestureTransformer {
 
         thetaX = congruentAngle(lastThetaX + thetaX)
         thetaY = congruentAngle(lastThetaY + thetaY)
-        
+
         return (thetaX, thetaY)
     }
 }
@@ -98,4 +98,3 @@ struct ScaleGestureTranformer {
         return scale*lastScale
     }
 }
-

@@ -12,7 +12,7 @@ import CoreGraphics
 struct CurlParams {
     let phi: Float
     let delta: Float
-    
+
     init(phi: CGFloat, delta: CGFloat) {
         self.phi = Float(phi)
         self.delta = Float(delta)

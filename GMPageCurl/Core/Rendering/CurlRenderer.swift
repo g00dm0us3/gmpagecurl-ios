@@ -33,7 +33,7 @@ extension CurlRenderingView {
         private var computedPositions: MTLTexture {
             return context.computedPositions!
         }
-        
+
         init() {
             context = CurlRenderingContext(DeviceWrapper.device, modelWidth: modelWidth, modelHeight: modelHeight)
         }

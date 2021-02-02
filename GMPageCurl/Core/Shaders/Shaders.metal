@@ -11,6 +11,7 @@
 #include <simd/simd.h>
 
 #define PI 3.1415926535897932384626433832795
+#define SQRT_3 1.73205081
 #define CYLINDER_RADIUS 0.25
 
 #define PHI_EPSILON 1e-2
@@ -23,6 +24,8 @@
 #define MODEL_HEIGHT 210.0f
 
 #define SHADOW_RADIUS 350
+
+#define COLOR(r,g,b) float3(r/255.0f, g/255.0f, b/255.0f);
 
 using namespace metal;
 
@@ -342,7 +345,7 @@ fragment float4 fragment_function(VertexOut in [[stage_in]],
 {
     float3 normal = normalize(in.normal);
     
-    float3 light_pos = normalize(float3(0.0,0.0,0.1));
+    float3 light_pos = float3(0.0,0.0,1);
     float3 pos = in.texture_coordinate.xyz;
     constexpr sampler texSampler(mag_filter::linear, min_filter::linear);
     float2 xy = pos.xy;
@@ -351,18 +354,27 @@ fragment float4 fragment_function(VertexOut in [[stage_in]],
     
     /// @note: this happens, if there is a roof (normal points downward from there, dot < 0, roof is rendered pitch black)
     float3 light_color = viewTexture.sample(texSampler, xy).xyz;
+    float diff = 1;
+    
     if (dot(normal, light_pos) < 0) {
         normal = float3(normal.x, normal.y, -normal.z);
-        light_color = float3(1, 1, 1);
+        light_color = COLOR(0xff, 0xff, 0x99)
+        float3 light_direction = normalize(light_pos);
+        diff = max(dot(light_direction, normal), (float)0);
     }
-
-    float3 light_direction = normalize(light_pos);
-    float diff = max(dot(light_direction, normal), (float)0);
-    float3 diffuse = diff*light_color;
 
     float val = calculate_shadow(in.fragment_in_light_space, depth);
     
+    float3 result = (1-val)*diff*light_color;
+    
+    float brightness = length(result);
+    
+    //brightness = saturate(brightness);
+    //brightness = mix(0.001, SQRT_3, brightness);
+    
+    result = brightness*normalize(result);
+    
     /// - todo: clamp it so, that pitch black is no longer a valid color,  but the top is not above any of the two (light_color / and wtv.)
-    return float4((1-val)*diffuse, 1);
+    return float4(result, 1);
     
 }

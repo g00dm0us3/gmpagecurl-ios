@@ -14,6 +14,7 @@
 		E50F333D25C68CCA00E0C5B2 /* InputUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50F333B25C68CCA00E0C5B2 /* InputUtils.swift */; };
 		E50F334525C6A11200E0C5B2 /* PanGestureTransformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50F334425C6A11200E0C5B2 /* PanGestureTransformerTests.swift */; };
 		E514A5A224BF0AD800ED988D /* CurlRenderingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E514A5A124BF0AD800ED988D /* CurlRenderingView.swift */; };
+		E548B34925C98BBF006EF369 /* CurlParams.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EAB1A025C927F7003B02ED /* CurlParams.swift */; };
 		E5AB192022725A17007521F5 /* MatrixUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5AB191F22725A17007521F5 /* MatrixUtils.swift */; };
 		E5BCEC7125C7E0DB009E73CB /* CurlRenderingContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5BCEC7025C7E0DB009E73CB /* CurlRenderingContext.swift */; };
 		E5C4CEAD223BA7B70077B654 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C4CEAC223BA7B70077B654 /* AppDelegate.swift */; };
@@ -224,14 +225,16 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1010;
-				LastUpgradeCheck = 1010;
+				LastUpgradeCheck = 1240;
 				ORGANIZATIONNAME = Homer;
 				TargetAttributes = {
 					E5C4CEA8223BA7B70077B654 = {
 						CreatedOnToolsVersion = 10.1;
+						LastSwiftMigration = 1240;
 					};
 					E5C4CEBC223BA7B90077B654 = {
 						CreatedOnToolsVersion = 10.1;
+						LastSwiftMigration = 1240;
 						TestTargetID = E5C4CEA8223BA7B70077B654;
 					};
 				};
@@ -301,6 +304,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E50F333725C68C3B00E0C5B2 /* CGPointExtensions.swift in Sources */,
+				E548B34925C98BBF006EF369 /* CurlParams.swift in Sources */,
 				E50F333D25C68CCA00E0C5B2 /* InputUtils.swift in Sources */,
 				E50F334525C6A11200E0C5B2 /* PanGestureTransformerTests.swift in Sources */,
 			);
@@ -362,6 +366,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -423,6 +428,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -466,7 +472,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = iHomer.GMPageCurl;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -485,7 +491,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = iHomer.GMPageCurl;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -505,7 +511,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = iHomer.PageCurlTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GMPageCurl.app/GMPageCurl";
 			};
@@ -526,7 +532,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = iHomer.PageCurlTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GMPageCurl.app/GMPageCurl";
 			};
