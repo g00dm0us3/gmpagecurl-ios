@@ -14,7 +14,7 @@ final class ViewController: RenderingViewController {
     var gestureRecognizer: UIPanGestureRecognizer!
     var pinchGestureRecognizer: UIPinchGestureRecognizer!
 
-    private let transformer = Input.PanGestureTransformer(maxPhi: CGFloat.pi/3, turnPageDistanceThreshold: 1.5)
+    private let transformer = PanGestureTransformer(maxPhi: CGFloat.pi/3, turnPageDistanceThreshold: 1.5)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -65,10 +65,10 @@ final class ViewController: RenderingViewController {
 
         let translation = gesture.translation(in: view)
 
-        if Input.PanGestureTransformer.shouldTransform(translation) {
+        if PanGestureTransformer.shouldTransform(translation) {
             let res = transformer.transform(translation: translation, in: view.bounds)
-            renderer.superPhi = Float(res.phi)
-            renderer.superRadius = Float(res.distanceFromRightEdge)
+            renderer.superPhi = res.phi
+            renderer.superRadius = res.distanceFromRightEdge
         }
     }
 }

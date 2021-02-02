@@ -14,9 +14,8 @@
 		E50F333D25C68CCA00E0C5B2 /* InputUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50F333B25C68CCA00E0C5B2 /* InputUtils.swift */; };
 		E50F334525C6A11200E0C5B2 /* PanGestureTransformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50F334425C6A11200E0C5B2 /* PanGestureTransformerTests.swift */; };
 		E514A5A224BF0AD800ED988D /* RenderingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E514A5A124BF0AD800ED988D /* RenderingView.swift */; };
-		E564CFCD25C461E2002D9475 /* WorldState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E564CFCC25C461E2002D9475 /* WorldState.swift */; };
 		E5AB192022725A17007521F5 /* MatrixUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5AB191F22725A17007521F5 /* MatrixUtils.swift */; };
-		E5BCEC7125C7E0DB009E73CB /* RenderingContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5BCEC7025C7E0DB009E73CB /* RenderingContext.swift */; };
+		E5BCEC7125C7E0DB009E73CB /* CurlRenderingContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5BCEC7025C7E0DB009E73CB /* CurlRenderingContext.swift */; };
 		E5C4CEAD223BA7B70077B654 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C4CEAC223BA7B70077B654 /* AppDelegate.swift */; };
 		E5C4CEAF223BA7B70077B654 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C4CEAE223BA7B70077B654 /* ViewController.swift */; };
 		E5C4CEB2223BA7B70077B654 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E5C4CEB0223BA7B70077B654 /* Main.storyboard */; };
@@ -24,8 +23,9 @@
 		E5C4CEB7223BA7B90077B654 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E5C4CEB5223BA7B90077B654 /* LaunchScreen.storyboard */; };
 		E5C4CECE223BA7CD0077B654 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5C4CECD223BA7CD0077B654 /* Metal.framework */; };
 		E5C4CED0223BBBF40077B654 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = E5C4CECF223BBBF40077B654 /* Shaders.metal */; };
-		E5C75319223D0F15004D46CA /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C75318223D0F15004D46CA /* Renderer.swift */; };
+		E5C75319223D0F15004D46CA /* CurlRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C75318223D0F15004D46CA /* CurlRenderer.swift */; };
 		E5C75322223D1BAE004D46CA /* RenderingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C75321223D1BAE004D46CA /* RenderingViewController.swift */; };
+		E5EAB1A125C927F7003B02ED /* CurlParams.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EAB1A025C927F7003B02ED /* CurlParams.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,9 +44,8 @@
 		E50F333B25C68CCA00E0C5B2 /* InputUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputUtils.swift; sourceTree = "<group>"; };
 		E50F334425C6A11200E0C5B2 /* PanGestureTransformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanGestureTransformerTests.swift; sourceTree = "<group>"; };
 		E514A5A124BF0AD800ED988D /* RenderingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingView.swift; sourceTree = "<group>"; };
-		E564CFCC25C461E2002D9475 /* WorldState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldState.swift; sourceTree = "<group>"; };
 		E5AB191F22725A17007521F5 /* MatrixUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixUtils.swift; sourceTree = "<group>"; };
-		E5BCEC7025C7E0DB009E73CB /* RenderingContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingContext.swift; sourceTree = "<group>"; };
+		E5BCEC7025C7E0DB009E73CB /* CurlRenderingContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurlRenderingContext.swift; sourceTree = "<group>"; };
 		E5C4CEA9223BA7B70077B654 /* GMPageCurl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GMPageCurl.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E5C4CEAC223BA7B70077B654 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E5C4CEAE223BA7B70077B654 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -58,8 +57,9 @@
 		E5C4CEC3223BA7B90077B654 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E5C4CECD223BA7CD0077B654 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		E5C4CECF223BBBF40077B654 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
-		E5C75318223D0F15004D46CA /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
+		E5C75318223D0F15004D46CA /* CurlRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurlRenderer.swift; sourceTree = "<group>"; };
 		E5C75321223D1BAE004D46CA /* RenderingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingViewController.swift; sourceTree = "<group>"; };
+		E5EAB1A025C927F7003B02ED /* CurlParams.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurlParams.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -163,11 +163,11 @@
 		E5C75320223D1B84004D46CA /* Rendering */ = {
 			isa = PBXGroup;
 			children = (
-				E5C75318223D0F15004D46CA /* Renderer.swift */,
+				E5C75318223D0F15004D46CA /* CurlRenderer.swift */,
 				E5C75321223D1BAE004D46CA /* RenderingViewController.swift */,
 				E514A5A124BF0AD800ED988D /* RenderingView.swift */,
-				E564CFCC25C461E2002D9475 /* WorldState.swift */,
-				E5BCEC7025C7E0DB009E73CB /* RenderingContext.swift */,
+				E5BCEC7025C7E0DB009E73CB /* CurlRenderingContext.swift */,
+				E5EAB1A025C927F7003B02ED /* CurlParams.swift */,
 			);
 			path = Rendering;
 			sourceTree = "<group>";
@@ -277,14 +277,14 @@
 				E5C4CEAF223BA7B70077B654 /* ViewController.swift in Sources */,
 				E50F333625C68C3B00E0C5B2 /* CGPointExtensions.swift in Sources */,
 				E50F333C25C68CCA00E0C5B2 /* InputUtils.swift in Sources */,
-				E5BCEC7125C7E0DB009E73CB /* RenderingContext.swift in Sources */,
+				E5BCEC7125C7E0DB009E73CB /* CurlRenderingContext.swift in Sources */,
 				E5C4CEAD223BA7B70077B654 /* AppDelegate.swift in Sources */,
 				E50F332D25C68B2200E0C5B2 /* DeviceWrapper.swift in Sources */,
 				E5C75322223D1BAE004D46CA /* RenderingViewController.swift in Sources */,
-				E5C75319223D0F15004D46CA /* Renderer.swift in Sources */,
+				E5C75319223D0F15004D46CA /* CurlRenderer.swift in Sources */,
 				E5AB192022725A17007521F5 /* MatrixUtils.swift in Sources */,
-				E564CFCD25C461E2002D9475 /* WorldState.swift in Sources */,
 				E514A5A224BF0AD800ED988D /* RenderingView.swift in Sources */,
+				E5EAB1A125C927F7003B02ED /* CurlParams.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

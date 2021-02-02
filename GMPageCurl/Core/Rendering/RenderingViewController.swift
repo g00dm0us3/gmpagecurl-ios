@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 
 class RenderingViewController: UIViewController {
-    var renderer: Renderer!
+    var renderer: CurlRenderer!
     var renderingView: RenderingView!
 
     override func viewDidLoad() {
@@ -26,6 +26,6 @@ class RenderingViewController: UIViewController {
         renderingView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         renderingView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
 
-        renderer = Renderer(renderingView, underlyingView: view)
+        renderer = CurlRenderer(renderingView)
     }
 }
