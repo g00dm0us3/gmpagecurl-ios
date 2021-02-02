@@ -32,16 +32,15 @@ class ViewController: UIViewController {
     private func showImageTap() {
         let renderer = UIGraphicsImageRenderer(size: renderingView.frame.size)
         
-        var time:timeval = timeval(tv_sec: 0, tv_usec: 0)
-        gettimeofday(&time, nil)
+        let view1 = UIView(frame: CGRect(origin: .zero, size: CGSize(width: view.bounds.width, height: view.bounds.height)))
+        view1.backgroundColor = .white
+        let label = UILabel(frame: CGRect(x: 100, y: 100, width: 100, height: 20))
+        label.text = "Hi ya'll!"
+        view1.addSubview(label)
         let image = renderer.image { (ctx) in
-            self.view.layer.render(in: ctx.cgContext)
+            view1.layer.render(in: ctx.cgContext)
         }
-        var time1:timeval = timeval(tv_sec: 0, tv_usec: 0)
-        gettimeofday(&time1, nil)
 
-        print("Sec \(time1.tv_sec - time.tv_sec) msec \(Double((time1.tv_usec - time.tv_usec)) / 1000.0)")
-        
         let vc = ImageViewController()
         present(vc, animated: true, completion: nil)
         vc.setImage(image)

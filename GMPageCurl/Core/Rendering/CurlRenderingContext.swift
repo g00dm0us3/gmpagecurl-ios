@@ -8,6 +8,7 @@
 
 import Foundation
 import Metal
+import MetalKit
 import UIKit
 import simd
 
@@ -26,6 +27,7 @@ internal final class CurlRenderingContext {
     private(set) var depthTexture: MTLTexture!
     private(set) var computedPositions: MTLTexture! // positions textures
     private(set) var computedNormals: MTLTexture!
+    private(set) var viewTexture: MTLTexture!
     
     private(set) var inputBuffer: MTLBuffer
     private(set) var uniformBuffer: MTLBuffer
@@ -113,14 +115,22 @@ internal final class CurlRenderingContext {
         fillConstantBuffers()
     }
 
-    func prepare(with drawable: CAMetalDrawable, andCurlParams: CurlParams) -> MTLCommandBuffer {
+    /// Prepares rendering context for rendering.
+    ///  - Note: call before each render pass
+    /// - Parameter drawable: drawable used as a final rendering destination
+    /// - Parameter params: parameters of a curl
+    /// - Parameter viewImage: image of a view (which was showing), to use as a texture in color pass
+    /// - Returns: command buffer, to use for render pass commands encoding
+    func prepare(with drawable: CAMetalDrawable, params: CurlParams, viewImage: UIImage) -> MTLCommandBuffer {
         drawableSize = CGSize(width: drawable.texture.width, height: drawable.texture.height)
 
         depthAttachmentDescriptorForColorPass = buildDepthAttachmentDescriptorForColorPass()
         depthAttachemntDescriptorForShadowPass = buildDepthAttachmentDescriptorForShadowPass()
         didUpdateDrawableSize = false
-    
-        fillCurlParamsBuffer(curlParams: andCurlParams)
+        
+        let textureLoader = MTKTextureLoader(device: device)
+        viewTexture = try! textureLoader.newTexture(cgImage: viewImage.cgImage!, options: nil)
+        fillCurlParamsBuffer(curlParams: params)
 
         return commandQueue.makeCommandBuffer()!
     }
@@ -254,7 +264,7 @@ internal final class CurlRenderingContext {
 
         return try device.makeRenderPipelineState(descriptor: pipelineStateDescriptor)
     }
-
+    
     private func makeOutputComputeTexture(pixelFormat: MTLPixelFormat, width: Int, height: Int) -> MTLTexture {
         let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: pixelFormat, width: width, height: height, mipmapped: false)
 

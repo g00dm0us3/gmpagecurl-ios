@@ -11,7 +11,7 @@
 #include <simd/simd.h>
 
 #define PI 3.1415926535897932384626433832795
-#define CYLINDER_RADIUS 0.2
+#define CYLINDER_RADIUS 0.25
 
 #define PHI_EPSILON 1e-2
 #define EPSILON 1e-6
@@ -299,7 +299,8 @@ vertex VertexOut vertex_function(texture2d<float> tex_vertices [[texture(0)]],
     out.fragment_in_model_space = float3((uniforms.modelMatrix * pos).xyz);
     out.normal = uniforms.lightModelMatrix * normal;
     out.fragment_in_light_space = constUniforms.lightMatrix * float4(out.fragment_in_model_space, 1);
-    out.texture_coordinate = constUniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
+    // - TODO: refactor this, to behave like in compute_positions
+    out.texture_coordinate = float4(-1+2*(tex_coord.x / (MODEL_WIDTH-1)), -1+2*(tex_coord.y / (MODEL_HEIGHT-1)), 0, 1);
     out.position = constUniforms.perspectiveMatrix * uniforms.modelMatrix * pos;
     out.color = float4(0,0,1,1);
     
@@ -335,14 +336,21 @@ float calculate_shadow(float4 fragment_in_light_space, depth2d<float> depth) {
 }
 
 /// Calculates color of a fragment, based on shadow pass, normals.
-fragment float4 fragment_function(VertexOut in [[stage_in]], depth2d<float> depth [[texture(0)]])
+fragment float4 fragment_function(VertexOut in [[stage_in]],
+                                  depth2d<float> depth [[texture(0)]],
+                                  texture2d<float> viewTexture [[texture(1)]])
 {
     float3 normal = normalize(in.normal);
     
     float3 light_pos = normalize(float3(0.0,0.0,0.1));
+    float3 pos = in.texture_coordinate.xyz;
+    constexpr sampler texSampler(mag_filter::linear, min_filter::linear);
+    float2 xy = pos.xy;
+    xy = xy* 0.5 + 0.5;
+    xy.y = 1 - xy.y;
     
     /// @note: this happens, if there is a roof (normal points downward from there, dot < 0, roof is rendered pitch black)
-    float3 light_color = float3(1,1,1);
+    float3 light_color = viewTexture.sample(texSampler, xy).xyz;
     if (dot(normal, light_pos) < 0) {
         normal = float3(normal.x, normal.y, -normal.z);
         light_color = float3(1, 1, 1);

@@ -38,8 +38,8 @@ extension CurlRenderingView {
             context = CurlRenderingContext(DeviceWrapper.device, modelWidth: modelWidth, modelHeight: modelHeight)
         }
 
-        func render(to drawable: CAMetalDrawable, with params: CurlParams) {
-            let newCommandBuffer = context.prepare(with: drawable, andCurlParams: params)
+        func render(to drawable: CAMetalDrawable, with params: CurlParams, viewImage: UIImage) {
+            let newCommandBuffer = context.prepare(with: drawable, params: params, viewImage: viewImage)
 
             computePositionsPass(newCommandBuffer)
             shadowRenderPass(newCommandBuffer, (drawable.texture.width, drawable.texture.height))
@@ -143,6 +143,7 @@ extension CurlRenderingView {
             renderEncoder.setVertexTexture(computedNormals, index: 1) // computed vertices / normals
 
             renderEncoder.setFragmentTexture(context.depthTexture!, index: 0)
+            renderEncoder.setFragmentTexture(context.viewTexture, index: 1)
 
             renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: context.vertexIndiciesCount / 2)
             renderEncoder.popDebugGroup()

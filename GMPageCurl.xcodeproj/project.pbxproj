@@ -27,6 +27,7 @@
 		E5EAB1A125C927F7003B02ED /* CurlParams.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EAB1A025C927F7003B02ED /* CurlParams.swift */; };
 		E5EAB1B025C93F8B003B02ED /* ImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EAB1AE25C93F8B003B02ED /* ImageViewController.swift */; };
 		E5EAB1B125C93F8B003B02ED /* ImageViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = E5EAB1AF25C93F8B003B02ED /* ImageViewController.xib */; };
+		E5EAB1B525C946A7003B02ED /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5EAB1B425C946A7003B02ED /* MetalKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +63,7 @@
 		E5EAB1A025C927F7003B02ED /* CurlParams.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurlParams.swift; sourceTree = "<group>"; };
 		E5EAB1AE25C93F8B003B02ED /* ImageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageViewController.swift; sourceTree = "<group>"; };
 		E5EAB1AF25C93F8B003B02ED /* ImageViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ImageViewController.xib; sourceTree = "<group>"; };
+		E5EAB1B425C946A7003B02ED /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +72,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E5C4CECE223BA7CD0077B654 /* Metal.framework in Frameworks */,
+				E5EAB1B525C946A7003B02ED /* MetalKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -149,6 +152,7 @@
 		E5C4CECC223BA7CD0077B654 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E5EAB1B425C946A7003B02ED /* MetalKit.framework */,
 				E5C4CECD223BA7CD0077B654 /* Metal.framework */,
 			);
 			name = Frameworks;
