@@ -25,6 +25,8 @@
 		E5C4CED0223BBBF40077B654 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = E5C4CECF223BBBF40077B654 /* Shaders.metal */; };
 		E5C75319223D0F15004D46CA /* CurlRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C75318223D0F15004D46CA /* CurlRenderer.swift */; };
 		E5EAB1A125C927F7003B02ED /* CurlParams.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EAB1A025C927F7003B02ED /* CurlParams.swift */; };
+		E5EAB1B025C93F8B003B02ED /* ImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EAB1AE25C93F8B003B02ED /* ImageViewController.swift */; };
+		E5EAB1B125C93F8B003B02ED /* ImageViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = E5EAB1AF25C93F8B003B02ED /* ImageViewController.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +60,8 @@
 		E5C4CECF223BBBF40077B654 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		E5C75318223D0F15004D46CA /* CurlRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurlRenderer.swift; sourceTree = "<group>"; };
 		E5EAB1A025C927F7003B02ED /* CurlParams.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurlParams.swift; sourceTree = "<group>"; };
+		E5EAB1AE25C93F8B003B02ED /* ImageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageViewController.swift; sourceTree = "<group>"; };
+		E5EAB1AF25C93F8B003B02ED /* ImageViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ImageViewController.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -127,6 +131,8 @@
 				E5C4CEB3223BA7B90077B654 /* Assets.xcassets */,
 				E5C4CEB5223BA7B90077B654 /* LaunchScreen.storyboard */,
 				E5C4CEB8223BA7B90077B654 /* Info.plist */,
+				E5EAB1AE25C93F8B003B02ED /* ImageViewController.swift */,
+				E5EAB1AF25C93F8B003B02ED /* ImageViewController.xib */,
 			);
 			path = GMPageCurl;
 			sourceTree = "<group>";
@@ -252,6 +258,7 @@
 			files = (
 				E5C4CEB7223BA7B90077B654 /* LaunchScreen.storyboard in Resources */,
 				E5C4CEB4223BA7B90077B654 /* Assets.xcassets in Resources */,
+				E5EAB1B125C93F8B003B02ED /* ImageViewController.xib in Resources */,
 				E5C4CEB2223BA7B70077B654 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -280,6 +287,7 @@
 				E5C75319223D0F15004D46CA /* CurlRenderer.swift in Sources */,
 				E5AB192022725A17007521F5 /* MatrixUtils.swift in Sources */,
 				E514A5A224BF0AD800ED988D /* CurlRenderingView.swift in Sources */,
+				E5EAB1B025C93F8B003B02ED /* ImageViewController.swift in Sources */,
 				E5EAB1A125C927F7003B02ED /* CurlParams.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

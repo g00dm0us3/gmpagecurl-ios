@@ -37,7 +37,8 @@ struct PanGestureTransformer {
     }
 
     /// Transforms pan gesture translation vector into parameters used for page curl rendering.
-    func transform(translation: CGPoint, in bounds: CGRect) -> (phi: CGFloat, distanceFromRightEdge: CGFloat) {
+    @inline(__always)
+    func transform(translation: CGPoint, in bounds: CGRect) -> CurlParams {
         guard abs(translation.x) >= PanGestureTransformer.minVectorLength else { fatalError("Translation vector too small") }
         let dot = translation.normalize().dot(xAxis)
 
@@ -53,16 +54,16 @@ struct PanGestureTransformer {
 
         let normalized = abs(translation.x/bounds.width)
         let rtl = translation.x < 0
-        var distanceFromRight = CGFloat(0)
+        var delta = CGFloat(0)
 
         // moving rtl
         if rtl {
-            distanceFromRight = normalized.rescale(0...1, newRange: 0...2)
+            delta = normalized.rescale(0...1, newRange: 0...2)
         } else {
-            distanceFromRight = 2 - normalized.rescale(0...1, newRange: 0...2)
+            delta = 2 - normalized.rescale(0...1, newRange: 0...2)
         }
 
-        return (rads.clamp(to: -maxPhi...maxPhi), distanceFromRight.clamp(to: 0...turnPageDistanceThreshold))
+        return CurlParams(phi: rads.clamp(to: -maxPhi...maxPhi), delta: delta.clamp(to: 0...turnPageDistanceThreshold))
     }
     
     /// Transofrms translation vector to the rotation angples around x and y axes.

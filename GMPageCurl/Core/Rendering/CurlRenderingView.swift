@@ -8,6 +8,7 @@
 
 import UIKit
 
+/// - TODO: implement sampleCount (MSAA)
 final class CurlRenderingView: UIView {
     private var renderer: CurlRenderer
     override class var layerClass: AnyClass { return CAMetalLayer.self }
@@ -27,6 +28,7 @@ final class CurlRenderingView: UIView {
     
     private var caDisplayLink: CADisplayLink!
     private let transformer = PanGestureTransformer(maxPhi: CGFloat.pi/3, turnPageDistanceThreshold: 1.5)
+    private let playBackStep = Float(0.09)
     
     override init(frame: CGRect) {
         self.renderer = CurlRenderer()
@@ -59,11 +61,16 @@ final class CurlRenderingView: UIView {
         runFlipBackAnimation()
     }
 
+    private var isInitial = true
+    
     @objc
     private func displayLink() {
         if let drawable = (layer as? CAMetalLayer)?.nextDrawable() {
             renderer.render(to: drawable, with: curlParams)
-            needsRender = false
+            if isInitial {
+                needsRender = false
+                isInitial = false
+            }
         }
     }
     
@@ -75,26 +82,24 @@ final class CurlRenderingView: UIView {
         }
 
         if gesture.state == .began {
-            //renderer.stopPlayBack()
+            needsRender = true
         }
 
         let translation = gesture.translation(in: self)
 
         if PanGestureTransformer.shouldTransform(translation) {
-            let res = transformer.transform(translation: translation, in: self.bounds)
-            curlParams = CurlParams(phi: res.phi, delta: res.distanceFromRightEdge)
+            curlParams = transformer.transform(translation: translation, in: self.bounds)
         }
     }
     
     private func runFlipBackAnimation() {
-        let playBackStep = Float(0.09)
-        
         var currentDelta = curlParams.delta
         while(isRunningPlayBack) {
             if currentDelta - playBackStep <= 0 {
                 currentDelta = 0
                 currentDelta = 0
                 isRunningPlayBack = false
+                needsRender = false
             } else {
                 currentDelta -= playBackStep
             }
