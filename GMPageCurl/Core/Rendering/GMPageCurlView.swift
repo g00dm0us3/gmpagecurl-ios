@@ -54,16 +54,17 @@ final class GMPageCurlView: UIView {
 
         mtlLayer.device = DeviceWrapper.device
         mtlLayer.pixelFormat = MTLPixelFormat.bgra8Unorm
+        mtlLayer.contentsScale = 2.0
         isOpaque = false
         mtlLayer.isOpaque = false
         self.caDisplayLink = CADisplayLink(target: self, selector: #selector(displayLink))
         self.caDisplayLink.add(to: .current, forMode: .default)
-        self.caDisplayLink.isPaused = true
-        /*let gestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(move))
+        //self.caDisplayLink.isPaused = true
+        let gestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(move))
         gestureRecognizer.minimumNumberOfTouches = 1
         gestureRecognizer.maximumNumberOfTouches = 1
         gestureRecognizer.cancelsTouchesInView = false
-        addGestureRecognizer(gestureRecognizer)*/
+        addGestureRecognizer(gestureRecognizer)
     }
 
     required init?(coder: NSCoder) {
@@ -149,16 +150,18 @@ final class GMPageCurlView: UIView {
     private func buildPlaceholderTexture(_ drawable: CAMetalDrawable) {
         guard placeholderTexture == nil else { return }
         if placeholderTexture == nil {
-            let view = UIView(frame: CGRect(origin: .zero, size: CGSize(width: drawable.texture.width, height: drawable.texture.height)))
+            // - todo: frames
+            let view = UIView(frame: CGRect(origin: .zero, size: CGSize(width: frame.width, height: frame.height)))
             view.backgroundColor = .white
-            let label = UITextView(frame: CGRect(x: 8, y: 8, width: view.frame.width-8, height: view.frame.height - 8))
+            let label = UITextView(frame: CGRect(x: 0, y: 0, width: view.frame.width-0, height: view.frame.height - 0))
             label.backgroundColor = .clear
+            label.font = UIFont.systemFont(ofSize: 14)
             label.text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
             view.addSubview(label)
 
             let imageRenderer = UIGraphicsImageRenderer(size: view.frame.size)
-
+        
             let image = imageRenderer.image { (ctx) in
                 view.layer.render(in: ctx.cgContext)
             }

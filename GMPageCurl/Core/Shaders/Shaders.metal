@@ -358,7 +358,7 @@ fragment float4 fragment_function(VertexOut in [[stage_in]],
     
     if (dot(normal, light_pos) < 0) {
         normal = float3(normal.x, normal.y, -normal.z);
-        light_color = COLOR(0xff, 0xff, 0x99)
+        light_color = COLOR(0xfe, 0xfe, 0xfe)
         float3 light_direction = normalize(light_pos);
         diff = max(dot(light_direction, normal), (float)0);
     }

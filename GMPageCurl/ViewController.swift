@@ -25,7 +25,7 @@ class ViewController: UIViewController {
         renderingView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         renderingView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
 
-        renderingView.isHidden = true
+        //renderingView.isHidden = true
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Show Image", style: .plain, target: self, action: #selector(showImageTap))
     }
 
