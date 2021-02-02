@@ -26,6 +26,7 @@ final class CurlRenderingView: UIView {
     }
     
     private var caDisplayLink: CADisplayLink!
+    private let transformer = PanGestureTransformer(maxPhi: CGFloat.pi/3, turnPageDistanceThreshold: 1.5)
     
     override init(frame: CGRect) {
         self.renderer = CurlRenderer()
@@ -39,6 +40,12 @@ final class CurlRenderingView: UIView {
         mtlLayer.isOpaque = false
         self.caDisplayLink = CADisplayLink(target: self, selector: #selector(displayLink))
         self.caDisplayLink.add(to: .current, forMode: .default)
+        
+        let gestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(move))
+        gestureRecognizer.minimumNumberOfTouches = 1
+        gestureRecognizer.maximumNumberOfTouches = 1
+        gestureRecognizer.cancelsTouchesInView = false
+        addGestureRecognizer(gestureRecognizer)
     }
 
     required init?(coder: NSCoder) {
@@ -57,6 +64,25 @@ final class CurlRenderingView: UIView {
         if let drawable = (layer as? CAMetalLayer)?.nextDrawable() {
             renderer.render(to: drawable, with: curlParams)
             needsRender = false
+        }
+    }
+    
+    @objc
+    func move(gesture: UIPanGestureRecognizer) {
+        if(gesture.state == UIGestureRecognizer.State.ended) {
+            animateFlipBack()
+            return
+        }
+
+        if gesture.state == .began {
+            //renderer.stopPlayBack()
+        }
+
+        let translation = gesture.translation(in: self)
+
+        if PanGestureTransformer.shouldTransform(translation) {
+            let res = transformer.transform(translation: translation, in: self.bounds)
+            curlParams = CurlParams(phi: res.phi, delta: res.distanceFromRightEdge)
         }
     }
     

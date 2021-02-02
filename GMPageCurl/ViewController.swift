@@ -7,67 +7,22 @@
 //
 
 import UIKit
-import Metal
 
-final class ViewController: RenderingViewController {
-
-    var gestureRecognizer: UIPanGestureRecognizer!
-    var pinchGestureRecognizer: UIPinchGestureRecognizer!
-
-    private let transformer = PanGestureTransformer(maxPhi: CGFloat.pi/3, turnPageDistanceThreshold: 1.5)
-
+/// For testing
+class ViewController: UIViewController {
+    private var renderingView: CurlRenderingView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        gestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(move))
-        gestureRecognizer.minimumNumberOfTouches = 1
-        gestureRecognizer.maximumNumberOfTouches = 1
-        gestureRecognizer.cancelsTouchesInView = false
-        view.addGestureRecognizer(gestureRecognizer)
+        
+        renderingView = CurlRenderingView(frame: CGRect.zero)
+        renderingView.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = .blue
+        view.addSubview(renderingView)
 
-        pinchGestureRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(pinch))
-        view.addGestureRecognizer(pinchGestureRecognizer)
-    }
-
-    override func touchesBegan(_ touches: Set<UITouch>,
-                      with event: UIEvent?) {
-        let touch = touches.first
-        //todo: render - true, on touches began
-        if touch != nil {
-
-        }
-
-    }
-
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        //model.replaying = true
-
-    }
-
-    @objc
-    func pinch(gesture: UIPinchGestureRecognizer) {
-        /*if (gesture.state == UIGestureRecognizer.State.ended) {
-            inputManager.pinchGestureEnded()
-            return
-        }
-        inputManager.pinchGestureChanged(Float(gesture.scale))*/
-    }
-
-    @objc
-    func move(gesture: UIPanGestureRecognizer) {
-        if(gesture.state == UIGestureRecognizer.State.ended) {
-            renderingView.animateFlipBack()
-            return
-        }
-
-        if gesture.state == .began {
-            //renderer.stopPlayBack()
-        }
-
-        let translation = gesture.translation(in: view)
-
-        if PanGestureTransformer.shouldTransform(translation) {
-            let res = transformer.transform(translation: translation, in: view.bounds)
-            renderingView.curlParams = CurlParams(phi: res.phi, delta: res.distanceFromRightEdge)
-        }
+        renderingView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        renderingView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        renderingView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        renderingView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
     }
 }
