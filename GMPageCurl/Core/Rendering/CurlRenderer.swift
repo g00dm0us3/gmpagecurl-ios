@@ -12,7 +12,7 @@ import Metal
 import simd
 import CoreGraphics
 
-extension CurlRenderingView {
+extension GMPageCurlView {
     final class CurlRenderer {
         private var currentDrawable: CAMetalDrawable?
 
@@ -38,12 +38,12 @@ extension CurlRenderingView {
             context = CurlRenderingContext(DeviceWrapper.device, modelWidth: modelWidth, modelHeight: modelHeight)
         }
 
-        func render(to drawable: CAMetalDrawable, with params: CurlParams, viewImage: UIImage) {
-            let newCommandBuffer = context.prepare(with: drawable, params: params, viewImage: viewImage)
+        func render(to drawable: CAMetalDrawable, with params: CurlParams, viewTexture: MTLTexture) {
+            let newCommandBuffer = context.prepare(with: drawable, params: params)
 
             computePositionsPass(newCommandBuffer)
             shadowRenderPass(newCommandBuffer, (drawable.texture.width, drawable.texture.height))
-            colorRenderPass(newCommandBuffer, drawable)
+            colorRenderPass(newCommandBuffer, drawable, viewTexture: viewTexture)
 
             newCommandBuffer.present(drawable)
             newCommandBuffer.commit()
@@ -105,7 +105,7 @@ extension CurlRenderingView {
             renderEncoder.endEncoding()
         }
 
-        private func colorRenderPass(_ commandBuffer: MTLCommandBuffer, _ drawable: CAMetalDrawable) {
+        private func colorRenderPass(_ commandBuffer: MTLCommandBuffer, _ drawable: CAMetalDrawable, viewTexture: MTLTexture) {
             // MARK: Start Color Pass
 
             /*let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm, width: drawable.texture.width, height: drawable.texture.height, mipmapped: false)
@@ -143,7 +143,7 @@ extension CurlRenderingView {
             renderEncoder.setVertexTexture(computedNormals, index: 1) // computed vertices / normals
 
             renderEncoder.setFragmentTexture(context.depthTexture!, index: 0)
-            renderEncoder.setFragmentTexture(context.viewTexture, index: 1)
+            renderEncoder.setFragmentTexture(viewTexture, index: 1)
 
             renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: context.vertexIndiciesCount / 2)
             renderEncoder.popDebugGroup()

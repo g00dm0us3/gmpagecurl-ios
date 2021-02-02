@@ -27,7 +27,6 @@ internal final class CurlRenderingContext {
     private(set) var depthTexture: MTLTexture!
     private(set) var computedPositions: MTLTexture! // positions textures
     private(set) var computedNormals: MTLTexture!
-    private(set) var viewTexture: MTLTexture!
 
     private(set) var inputBuffer: MTLBuffer
     private(set) var uniformBuffer: MTLBuffer
@@ -118,17 +117,14 @@ internal final class CurlRenderingContext {
     ///  - Note: call before each render pass
     /// - Parameter drawable: drawable used as a final rendering destination
     /// - Parameter params: parameters of a curl
-    /// - Parameter viewImage: image of a view (which was showing), to use as a texture in color pass
     /// - Returns: command buffer, to use for render pass commands encoding
-    func prepare(with drawable: CAMetalDrawable, params: CurlParams, viewImage: UIImage) -> MTLCommandBuffer {
+    func prepare(with drawable: CAMetalDrawable, params: CurlParams) -> MTLCommandBuffer {
         drawableSize = CGSize(width: drawable.texture.width, height: drawable.texture.height)
 
         depthAttachmentDescriptorForColorPass = buildDepthAttachmentDescriptorForColorPass()
         depthAttachemntDescriptorForShadowPass = buildDepthAttachmentDescriptorForShadowPass()
         didUpdateDrawableSize = false
 
-        let textureLoader = MTKTextureLoader(device: device)
-        viewTexture = try! textureLoader.newTexture(cgImage: viewImage.cgImage!, options: nil)
         fillCurlParamsBuffer(curlParams: params)
 
         return commandQueue.makeCommandBuffer()!

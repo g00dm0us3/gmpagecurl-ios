@@ -10,12 +10,12 @@ import UIKit
 
 /// For testing
 class ViewController: UIViewController {
-    private var renderingView: CurlRenderingView!
+    private var renderingView: GMPageCurlView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        renderingView = CurlRenderingView(frame: CGRect.zero)
+        renderingView = GMPageCurlView(frame: CGRect.zero)
         renderingView.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = .blue
         view.addSubview(renderingView)
