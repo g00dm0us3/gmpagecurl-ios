@@ -9,9 +9,11 @@
 import Foundation
 import CoreGraphics
 
-struct CurlParams {
+struct CurlParams: Equatable {
     let phi: Float
     let delta: Float
+    
+    static let noCurl = CurlParams(phi: 0, delta: 0)
 
     init(phi: CGFloat, delta: CGFloat) {
         self.phi = Float(phi)

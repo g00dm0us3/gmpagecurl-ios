@@ -25,6 +25,7 @@ class ViewController: UIViewController {
         renderingView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         renderingView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
 
+        renderingView.isHidden = true
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Show Image", style: .plain, target: self, action: #selector(showImageTap))
     }
 
@@ -47,6 +48,17 @@ class ViewController: UIViewController {
     }
 
     override func viewDidLayoutSubviews() {
+        renderingView.reloadData()
+    }
+}
 
+extension ViewController: GMPageCurlViewDataSource {
+    func pageCurlView(_ pageCurlView: GMPageCurlView) -> GMPageView {
+        return PageView(frame: .zero)
+    }
+    
+    func pageCurlView(_ pageCurlView: GMPageCurlView, updateView: GMPageView, for pageIndex: UInt32) {
+        updateView.frame = pageCurlView.frame
+        (updateView as? PageView)?.text = "Hello world on page \(pageIndex) "
     }
 }
