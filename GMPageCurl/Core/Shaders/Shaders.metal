@@ -12,7 +12,7 @@
 
 #define PI 3.1415926535897932384626433832795
 #define SQRT_3 1.73205081
-#define CYLINDER_RADIUS 0.25
+#define CYLINDER_RADIUS 0.30
 
 #define PHI_EPSILON 1e-2
 #define EPSILON 1e-6
@@ -20,8 +20,8 @@
 #define NDT_MAX_COORD 1
 #define NDT_MIN_COORD -1
 
-#define MODEL_WIDTH 105.0f
-#define MODEL_HEIGHT 210.0f
+#define MODEL_WIDTH 250.0f
+#define MODEL_HEIGHT 400.0f
 
 #define SHADOW_RADIUS 350
 
@@ -343,7 +343,7 @@ fragment float4 fragment_function(VertexOut in [[stage_in]],
                                   depth2d<float> depth [[texture(0)]],
                                   texture2d<float> viewTexture [[texture(1)]])
 {
-    float3 normal = normalize(in.normal);
+    float3 normal = normalize(float3(0, 0, in.normal.z)); // keep x/y to model point source light,
     
     float3 light_pos = float3(0.0,0.0,1);
     float3 pos = in.texture_coordinate.xyz;
@@ -356,14 +356,17 @@ fragment float4 fragment_function(VertexOut in [[stage_in]],
     float3 light_color = viewTexture.sample(texSampler, xy).xyz;
     float diff = 1;
     
+    // - todo: fragment on the curve cannot by in the shadow?
+    float val = calculate_shadow(in.fragment_in_light_space, depth);
+    
     if (dot(normal, light_pos) < 0) {
         normal = float3(normal.x, normal.y, -normal.z);
-        light_color = COLOR(0xfe, 0xfe, 0xfe)
+        light_color = COLOR(0xf9, 0xf9, 0xf1)
         float3 light_direction = normalize(light_pos);
         diff = max(dot(light_direction, normal), (float)0);
     }
 
-    float val = calculate_shadow(in.fragment_in_light_space, depth);
+    
     
     float3 result = (1-val)*diff*light_color;
     

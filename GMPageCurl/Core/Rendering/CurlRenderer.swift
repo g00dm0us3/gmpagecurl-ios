@@ -17,8 +17,8 @@ extension GMPageCurlView {
         private var currentDrawable: CAMetalDrawable?
 
         // should correspond to the #defines in shader
-        fileprivate let modelWidth = 105
-        fileprivate let modelHeight = 210
+        fileprivate let modelWidth = 250
+        fileprivate let modelHeight = 400
 
         private var device: MTLDevice {
             return DeviceWrapper.device
