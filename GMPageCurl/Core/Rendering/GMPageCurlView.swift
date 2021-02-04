@@ -42,8 +42,6 @@ final class GMPageCurlView: UIView {
     
     @objc
     private func panHandler(gesture: UIPanGestureRecognizer) {
-        guard let topSubview = subviews.last else { return }
-        
         if gesture.state == .began {
             // intentially not using topSubview's frame here, since if it doesn't match the size
             // of curl view, the behavior is pretty much undefined (book has non-uniform page sizes)

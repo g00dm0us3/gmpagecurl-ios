@@ -18,46 +18,46 @@ enum MatrixUtils {
 
     static var identityMatrix4x4: simd_float4x4 {
         return simd_float4x4([
-            float4(arrayLiteral: 1, 0, 0, 0),
-            float4(arrayLiteral: 0, 1, 0, 0),
-            float4(arrayLiteral: 0, 0, 1, 0),
-            float4(arrayLiteral: 0, 0, 0, 1)
+            SIMD4<Float>(arrayLiteral: 1, 0, 0, 0),
+            SIMD4<Float>(arrayLiteral: 0, 1, 0, 0),
+            SIMD4<Float>(arrayLiteral: 0, 0, 1, 0),
+            SIMD4<Float>(arrayLiteral: 0, 0, 0, 1)
         ])
     }
 
     static func matrix4x4Translate(t: simd_float3) -> simd_float4x4 {
         return simd_float4x4([
-            float4(arrayLiteral: 1, 0, 0, 0),
-            float4(arrayLiteral: 0, 1, 0, 0),
-            float4(arrayLiteral: 0, 0, 1, 0),
-            float4(arrayLiteral: t.x, t.y, t.z, 1)
+            SIMD4<Float>(arrayLiteral: 1, 0, 0, 0),
+            SIMD4<Float>(arrayLiteral: 0, 1, 0, 0),
+            SIMD4<Float>(arrayLiteral: 0, 0, 1, 0),
+            SIMD4<Float>(arrayLiteral: t.x, t.y, t.z, 1)
         ])
     }
 
     static func matrix4x4Scale(scale: simd_float3) -> simd_float4x4 {
         return simd_float4x4([
-            float4(arrayLiteral: scale.x, 0, 0, 0),
-            float4(arrayLiteral: 0, scale.y, 0, 0),
-            float4(arrayLiteral: 0, 0, scale.z, 0),
-            float4(arrayLiteral: 0, 0, 0, 1)
+            SIMD4<Float>(arrayLiteral: scale.x, 0, 0, 0),
+            SIMD4<Float>(arrayLiteral: 0, scale.y, 0, 0),
+            SIMD4<Float>(arrayLiteral: 0, 0, scale.z, 0),
+            SIMD4<Float>(arrayLiteral: 0, 0, 0, 1)
         ])
     }
 
     static func matrix4x4RotateAroundX(theta: Float) -> simd_float4x4 {
         return simd_float4x4([
-            float4(arrayLiteral: 1, 0, 0, 0),
-            float4(arrayLiteral: 0, cosf(theta), -sinf(theta), 0),
-            float4(arrayLiteral: 0, sinf(theta), cosf(theta), 0),
-            float4(arrayLiteral: 0, 0, 0, 1)
+            SIMD4<Float>(arrayLiteral: 1, 0, 0, 0),
+            SIMD4<Float>(arrayLiteral: 0, cosf(theta), -sinf(theta), 0),
+            SIMD4<Float>(arrayLiteral: 0, sinf(theta), cosf(theta), 0),
+            SIMD4<Float>(arrayLiteral: 0, 0, 0, 1)
         ])
     }
 
     static func matrix4x4RotateAroundY(theta: Float) -> simd_float4x4 {
         return simd_float4x4([
-            float4(arrayLiteral: cosf(theta), 0, sinf(theta), 0),
-            float4(arrayLiteral: 0, 1, 0, 0),
-            float4(arrayLiteral: -sinf(theta), 0, cosf(theta), 0),
-            float4(arrayLiteral: 0, 0, 0, 1)
+            SIMD4<Float>(arrayLiteral: cosf(theta), 0, sinf(theta), 0),
+            SIMD4<Float>(arrayLiteral: 0, 1, 0, 0),
+            SIMD4<Float>(arrayLiteral: -sinf(theta), 0, cosf(theta), 0),
+            SIMD4<Float>(arrayLiteral: 0, 0, 0, 1)
         ])
     }
 
@@ -71,19 +71,19 @@ enum MatrixUtils {
         let wzScale = -2 * far * near / zRange
 
         return simd_float4x4([
-            float4(arrayLiteral: xScale, 0, 0, 0),
-            float4(arrayLiteral: 0, yScale, 0, 0),
-            float4(arrayLiteral: 0, 0, zScale, -1),
-            float4(0, 0, wzScale, 0)
+            SIMD4<Float>(arrayLiteral: xScale, 0, 0, 0),
+            SIMD4<Float>(arrayLiteral: 0, yScale, 0, 0),
+            SIMD4<Float>(arrayLiteral: 0, 0, zScale, -1),
+            SIMD4<Float>(0, 0, wzScale, 0)
         ])
     }
 
     static func matrix_ortho(left: Float, right: Float, bottom: Float, top: Float, near: Float, far: Float) -> simd_float4x4 {
         return simd_float4x4([
-            float4(arrayLiteral: 2/(right-left), 0, 0, 0),
-            float4(arrayLiteral: 0, 2/(top-bottom), 0, 0),
-            float4(arrayLiteral: 0, 0, 1 / (far - near), 0),
-            float4(arrayLiteral: (left+right) / (left - right), (top + bottom) / (bottom - top), near / (near - far), 1)
+            SIMD4<Float>(arrayLiteral: 2/(right-left), 0, 0, 0),
+            SIMD4<Float>(arrayLiteral: 0, 2/(top-bottom), 0, 0),
+            SIMD4<Float>(arrayLiteral: 0, 0, 1 / (far - near), 0),
+            SIMD4<Float>(arrayLiteral: (left+right) / (left - right), (top + bottom) / (bottom - top), near / (near - far), 1)
         ])
     }
 
@@ -93,10 +93,10 @@ enum MatrixUtils {
         let yaxis = cross(zaxis, xaxis)
 
         return simd_float4x4([
-            float4(arrayLiteral: xaxis.x, yaxis.x, zaxis.x, 0),
-            float4(arrayLiteral: xaxis.y, yaxis.y, zaxis.y, 0),
-            float4(arrayLiteral: xaxis.z, yaxis.z, zaxis.z, 0),
-            float4(arrayLiteral: -dot(xaxis, eye), -dot(yaxis, eye), -dot(zaxis, eye), 1)
+            SIMD4<Float>(arrayLiteral: xaxis.x, yaxis.x, zaxis.x, 0),
+            SIMD4<Float>(arrayLiteral: xaxis.y, yaxis.y, zaxis.y, 0),
+            SIMD4<Float>(arrayLiteral: xaxis.z, yaxis.z, zaxis.z, 0),
+            SIMD4<Float>(arrayLiteral: -dot(xaxis, eye), -dot(yaxis, eye), -dot(zaxis, eye), 1)
         ])
     }
 

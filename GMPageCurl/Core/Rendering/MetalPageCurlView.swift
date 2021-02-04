@@ -38,7 +38,7 @@ final class MetalPageCurlView: UIView {
     }
 
     private var caDisplayLink: CADisplayLink!
-    private let transformer = PanGestureTransformer(maxPhi: CGFloat.pi/3, turnPageDistanceThreshold: 1.5)
+    private let transformer = PanGestureTransformer(maxPhi: CGFloat.pi/3, turnPageDistanceThreshold: 1.8)
     private let playBackStep = Float(0.09)
 
     private var placeholderTexture: MTLTexture!
@@ -163,7 +163,6 @@ final class MetalPageCurlView: UIView {
             }
             
             let textureLoader = MTKTextureLoader(device: DeviceWrapper.device)
-            guard let device = (self.layer as? CAMetalLayer)?.device else { return }
             placeholderTexture = try! textureLoader.newTexture(cgImage: image.cgImage!, options: nil)
         }
     }
