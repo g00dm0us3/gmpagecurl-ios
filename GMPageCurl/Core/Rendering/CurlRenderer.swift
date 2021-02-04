@@ -12,7 +12,7 @@ import Metal
 import simd
 import CoreGraphics
 
-extension GMPageCurlView {
+extension MetalPageCurlView {
     final class CurlRenderer {
         private var currentDrawable: CAMetalDrawable?
 

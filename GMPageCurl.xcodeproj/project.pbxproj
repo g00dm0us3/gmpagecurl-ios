@@ -13,7 +13,8 @@
 		E50F333C25C68CCA00E0C5B2 /* InputUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50F333B25C68CCA00E0C5B2 /* InputUtils.swift */; };
 		E50F333D25C68CCA00E0C5B2 /* InputUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50F333B25C68CCA00E0C5B2 /* InputUtils.swift */; };
 		E50F334525C6A11200E0C5B2 /* PanGestureTransformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E50F334425C6A11200E0C5B2 /* PanGestureTransformerTests.swift */; };
-		E514A5A224BF0AD800ED988D /* GMPageCurlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E514A5A124BF0AD800ED988D /* GMPageCurlView.swift */; };
+		E5147D7B25CC294100296553 /* GMPageCurlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5147D7A25CC294100296553 /* GMPageCurlView.swift */; };
+		E514A5A224BF0AD800ED988D /* MetalPageCurlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E514A5A124BF0AD800ED988D /* MetalPageCurlView.swift */; };
 		E548B34925C98BBF006EF369 /* CurlParams.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EAB1A025C927F7003B02ED /* CurlParams.swift */; };
 		E568F04F25C98F6100275153 /* GMPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E568F04E25C98F6100275153 /* GMPageView.swift */; };
 		E568F05325C99C3800275153 /* PageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E568F05225C99C3800275153 /* PageView.swift */; };
@@ -48,7 +49,8 @@
 		E50F333525C68C3B00E0C5B2 /* CGPointExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGPointExtensions.swift; sourceTree = "<group>"; };
 		E50F333B25C68CCA00E0C5B2 /* InputUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputUtils.swift; sourceTree = "<group>"; };
 		E50F334425C6A11200E0C5B2 /* PanGestureTransformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanGestureTransformerTests.swift; sourceTree = "<group>"; };
-		E514A5A124BF0AD800ED988D /* GMPageCurlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GMPageCurlView.swift; sourceTree = "<group>"; };
+		E5147D7A25CC294100296553 /* GMPageCurlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GMPageCurlView.swift; sourceTree = "<group>"; };
+		E514A5A124BF0AD800ED988D /* MetalPageCurlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalPageCurlView.swift; sourceTree = "<group>"; };
 		E568F04E25C98F6100275153 /* GMPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GMPageView.swift; sourceTree = "<group>"; };
 		E568F05225C99C3800275153 /* PageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageView.swift; sourceTree = "<group>"; };
 		E5AB191F22725A17007521F5 /* MatrixUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixUtils.swift; sourceTree = "<group>"; };
@@ -178,10 +180,11 @@
 			isa = PBXGroup;
 			children = (
 				E5C75318223D0F15004D46CA /* CurlRenderer.swift */,
-				E514A5A124BF0AD800ED988D /* GMPageCurlView.swift */,
+				E514A5A124BF0AD800ED988D /* MetalPageCurlView.swift */,
 				E5BCEC7025C7E0DB009E73CB /* CurlRenderingContext.swift */,
 				E5EAB1A025C927F7003B02ED /* CurlParams.swift */,
 				E568F04E25C98F6100275153 /* GMPageView.swift */,
+				E5147D7A25CC294100296553 /* GMPageCurlView.swift */,
 			);
 			path = Rendering;
 			sourceTree = "<group>";
@@ -300,9 +303,10 @@
 				E50F332D25C68B2200E0C5B2 /* DeviceWrapper.swift in Sources */,
 				E5C75319223D0F15004D46CA /* CurlRenderer.swift in Sources */,
 				E5AB192022725A17007521F5 /* MatrixUtils.swift in Sources */,
-				E514A5A224BF0AD800ED988D /* GMPageCurlView.swift in Sources */,
+				E514A5A224BF0AD800ED988D /* MetalPageCurlView.swift in Sources */,
 				E5EAB1B025C93F8B003B02ED /* ImageViewController.swift in Sources */,
 				E5EAB1A125C927F7003B02ED /* CurlParams.swift in Sources */,
+				E5147D7B25CC294100296553 /* GMPageCurlView.swift in Sources */,
 				E568F05325C99C3800275153 /* PageView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
