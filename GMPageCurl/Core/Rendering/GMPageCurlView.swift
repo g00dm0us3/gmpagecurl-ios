@@ -9,7 +9,18 @@
 import UIKit
 import MetalKit
 
+enum PageTurnProgress: Float {
+    case zero = 0
+    case quarter = 0.5
+    case halfWay = 1
+    case threeQuarters = 1.5
+}
+
 final class GMPageCurlView: UIView {
+    
+    /// Threshold, after which the flip animation kicks in. The greater value means that user has to drag finger longer, before page flips automatically.
+    var flipAnimationThreshold = PageTurnProgress.zero
+    
     private let metalPageCurlView = MetalPageCurlView()
     
     init() {
@@ -38,6 +49,7 @@ final class GMPageCurlView: UIView {
             // of curl view, the behavior is pretty much undefined (book has non-uniform page sizes)
             let imageRenderer = UIGraphicsImageRenderer(size: frame.size)
 
+            /// - todo: check direction before rendering
             let image = imageRenderer.image { (ctx) in
                 self.layer.render(in: ctx.cgContext)
             }
@@ -54,7 +66,7 @@ final class GMPageCurlView: UIView {
         }
         
         if gesture.state == .ended {
-            isUserInteractionEnabled = true // only after flip back / forward animtion ends
+            isUserInteractionEnabled = true /// - todo: only after flip back / forward animtion ends
             metalPageCurlView.endFlip()
         }
     }

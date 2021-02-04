@@ -43,7 +43,6 @@ final class MetalPageCurlView: UIView {
 
     private var placeholderTexture: MTLTexture!
     private var inflightPage: MTLTexture?
-    //private let gestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(move))
     
     // MARK: Initializers
     override init(frame: CGRect) {
@@ -60,11 +59,6 @@ final class MetalPageCurlView: UIView {
         mtlLayer.isOpaque = false
         self.caDisplayLink = CADisplayLink(target: self, selector: #selector(displayLink))
         self.caDisplayLink.add(to: .current, forMode: .default)
-
-        /*gestureRecognizer.minimumNumberOfTouches = 1
-        gestureRecognizer.maximumNumberOfTouches = 1
-        gestureRecognizer.cancelsTouchesInView = false
-        addGestureRecognizer(gestureRecognizer)*/
     }
 
     required init?(coder: NSCoder) {
@@ -77,14 +71,6 @@ final class MetalPageCurlView: UIView {
        // do {
         inflightPage = try! textureLoader.newTexture(cgImage: pageImage, options: nil)
         isHidden = false
-        //gestureRecognizer.setTranslation(translation, in: self)
-        //let touch = UITouch()
-        //gestureRecognizer.touchesBegan(<#T##touches: Set<UITouch>##Set<UITouch>#>, with: <#T##UIEvent#>)
-        //curlParams = transformer.transform(translation: translation, in: self.bounds)
-        //} catch let e {
-          //  let nse = e as? NSError
-            //print("Failed to create tex.")
-        //}
     }
     
     func updateFlip(translation: CGPoint) {
@@ -134,24 +120,6 @@ final class MetalPageCurlView: UIView {
                 // delegate call
                 inflightPage = nil
             }
-        }
-    }
-
-    @objc
-    func move(gesture: UIPanGestureRecognizer) {
-        if(gesture.state == UIGestureRecognizer.State.ended) {
-            animateFlipBack()
-            return
-        }
-
-        if gesture.state == .began {
-            needsRender = true
-        }
-
-        let translation = gesture.translation(in: self)
-
-        if PanGestureTransformer.shouldTransform(translation) {
-            curlParams = transformer.transform(translation: translation, in: self.bounds)
         }
     }
 
