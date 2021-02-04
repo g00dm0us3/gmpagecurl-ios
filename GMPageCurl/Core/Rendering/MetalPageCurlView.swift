@@ -30,6 +30,7 @@ final class MetalPageCurlView: UIView {
     override class var layerClass: AnyClass { return CAMetalLayer.self }
 
     private var isRunningPlayBack = false
+    private var isRunningFlipForward = false
     private var needsRender: Bool {
         didSet {
             caDisplayLink?.isPaused = !needsRender
@@ -71,10 +72,10 @@ final class MetalPageCurlView: UIView {
     }
     
     // MARK: Public interface
-    func beginFlip(from translation: CGPoint, pageImage: CGImage) {
+    func beginFlip(with pageImage: CGImage) {
         let textureLoader = MTKTextureLoader(device: DeviceWrapper.device)
        // do {
-        //inflightPage = try textureLoader.newTexture(cgImage: pageImage, options: nil)
+        inflightPage = try! textureLoader.newTexture(cgImage: pageImage, options: nil)
         isHidden = false
         //gestureRecognizer.setTranslation(translation, in: self)
         //let touch = UITouch()
@@ -84,6 +85,17 @@ final class MetalPageCurlView: UIView {
           //  let nse = e as? NSError
             //print("Failed to create tex.")
         //}
+    }
+    
+    func updateFlip(translation: CGPoint) {
+        if PanGestureTransformer.shouldTransform(translation) {
+            curlParams = transformer.transform(translation: translation, in: self.bounds)
+        }
+    }
+    
+    func endFlip() {
+        guard !isRunningFlipForward else { return }
+        isRunningFlipForward = true
     }
 
     // MARK: Private Interface
@@ -102,6 +114,15 @@ final class MetalPageCurlView: UIView {
             renderer.render(to: drawable, with: curlParams, viewTexture: tex)
         } else {
             renderer.render(to: drawable, with: curlParams, viewTexture: placeholderTexture)
+        }
+        
+        if isRunningFlipForward {
+            isRunningFlipForward = flipForwardStep()
+            needsRender = isRunningFlipForward
+            if !isRunningFlipForward {
+                inflightPage = nil
+                isHidden = true
+            }
         }
         
         if isRunningPlayBack {
@@ -140,6 +161,19 @@ final class MetalPageCurlView: UIView {
         var newParams = CurlParams.noCurl
         if curlParams.delta - playBackStep > 0 {
             newParams = CurlParams(phi: CGFloat(curlParams.phi), delta: CGFloat(curlParams.delta - playBackStep))
+        }
+        
+        curlParams = newParams
+        
+        return true
+    }
+    
+    private func flipForwardStep() -> Bool {
+        guard curlParams != .noCurl else { return false}
+        
+        var newParams = CurlParams.noCurl
+        if curlParams.delta + playBackStep < 2.0 {
+            newParams = CurlParams(phi: CGFloat(curlParams.phi), delta: CGFloat(curlParams.delta + playBackStep))
         }
         
         curlParams = newParams
