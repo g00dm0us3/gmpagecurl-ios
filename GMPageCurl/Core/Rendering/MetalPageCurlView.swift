@@ -9,8 +9,32 @@
 import UIKit
 import MetalKit
 
+protocol MetalCurlViewDelegate: class {
+    func didStart(flipAnimation inView: MetalPageCurlView)
+    func didFinish(flipAnimation inView: MetalPageCurlView)
+}
+
 /// - TODO: implement sampleCount (MSAA)
 final class MetalPageCurlView: UIView {
+    enum FlipDirection: Equatable {
+        case unknown
+        case forward
+        case backward
+        
+        init(_ translation: CGPoint) {
+            if translation.x > 0 {
+                self = .backward
+                return
+            }
+            self = .forward
+        }
+    }
+    
+    weak var delegate: MetalCurlViewDelegate?
+    
+    var isRunningAnimation: Bool {
+        return flipDirection != .unknown
+    }
     
     override var isHidden: Bool {
         get { return super.isHidden }
@@ -20,22 +44,10 @@ final class MetalPageCurlView: UIView {
         }
     }
     
-    private var curlParams = CurlParams(phi: 0, delta: 0) {
-        didSet {
-            needsRender = true
-        }
-    }
+    private var curlParams = CurlParams(phi: 0, delta: 0)
     
     private var renderer: CurlRenderer
     override class var layerClass: AnyClass { return CAMetalLayer.self }
-
-    private var isRunningPlayBack = false
-    private var isRunningFlipForward = false
-    private var needsRender: Bool {
-        didSet {
-            caDisplayLink?.isPaused = !needsRender
-        }
-    }
 
     private var caDisplayLink: CADisplayLink!
     private let transformer = PanGestureTransformer(maxPhi: CGFloat.pi/3, turnPageDistanceThreshold: 1.8)
@@ -44,10 +56,10 @@ final class MetalPageCurlView: UIView {
     private var placeholderTexture: MTLTexture!
     private var inflightPage: MTLTexture?
     
+    private var flipDirection = FlipDirection.unknown
     // MARK: Initializers
     override init(frame: CGRect) {
         self.renderer = CurlRenderer()
-        self.needsRender = true
 
         super.init(frame: frame)
         guard let mtlLayer = layer as? CAMetalLayer else { fatalError("This should be metal layer!") }
@@ -66,29 +78,41 @@ final class MetalPageCurlView: UIView {
     }
     
     // MARK: Public interface
-    func beginFlip(with pageImage: CGImage) {
+    func beginFlip(with pageImage: CGImage, flipDirection: FlipDirection) {
+        guard !isRunningAnimation else { return }
+        
         let textureLoader = MTKTextureLoader(device: DeviceWrapper.device)
        // do {
         inflightPage = try! textureLoader.newTexture(cgImage: pageImage, options: nil)
         isHidden = false
+        self.flipDirection = flipDirection
     }
     
     func updateFlip(translation: CGPoint) {
+        guard !isRunningAnimation else { return }
         if PanGestureTransformer.shouldTransform(translation) {
             curlParams = transformer.transform(translation: translation, in: self.bounds)
         }
     }
     
-    func endFlip() {
-        guard !isRunningFlipForward else { return }
-        isRunningFlipForward = true
-    }
-
-    // MARK: Private Interface
-    private func animateFlipBack() {
-        isRunningPlayBack = true
+    func endFlip(flipAnimationThreshold: PageTurnProgress) {
+        let raw = flipAnimationThreshold.rawValue
+        guard !isRunningAnimation else { return }
+        
+        if self.flipDirection == .forward {
+            if raw <= curlParams.delta {
+                self.flipDirection = .backward
+            } else {
+                self.flipDirection = .forward
+            }
+        } else {
+            /// - todo: should do the same check here, as above (animation threshold)
+            self.flipDirection = .backward
+        }
         isUserInteractionEnabled = false
-        needsRender = true
+        if isRunningAnimation {
+            delegate?.didStart(flipAnimation: self)
+        }
     }
 
     @objc
@@ -102,24 +126,32 @@ final class MetalPageCurlView: UIView {
             renderer.render(to: drawable, with: curlParams, viewTexture: placeholderTexture)
         }
         
+        /// - todo: flip direction not enough, to see if animation should roll
+        switch flipDirection {
+        
+        }
+        
         if isRunningFlipForward {
             isRunningFlipForward = flipForwardStep()
-            needsRender = isRunningFlipForward
             if !isRunningFlipForward {
                 inflightPage = nil
                 isHidden = true
             }
+            flipDirection = .unknown
         }
         
         if isRunningPlayBack {
             isRunningPlayBack = flipBackStep()
-            needsRender = isRunningPlayBack
-            isUserInteractionEnabled = !isRunningPlayBack
             
             if !isRunningPlayBack {
-                // delegate call
                 inflightPage = nil
+                isHidden = true
             }
+            flipDirection = .unknown
+        }
+        
+        if !isRunningAnimation {
+            delegate?.didFinish(flipAnimation: self)
         }
     }
 

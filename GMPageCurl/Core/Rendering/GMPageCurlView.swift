@@ -19,7 +19,9 @@ enum PageTurnProgress: Float {
 final class GMPageCurlView: UIView {
     
     /// Threshold, after which the flip animation kicks in. The greater value means that user has to drag finger longer, before page flips automatically.
-    var flipAnimationThreshold = PageTurnProgress.zero
+    var flipAnimationThreshold = PageTurnProgress.halfWay
+    
+    private(set) var currentPageIndex = UInt32(0)
     
     private let metalPageCurlView = MetalPageCurlView()
     
@@ -34,6 +36,7 @@ final class GMPageCurlView: UIView {
         metalPageCurlView.frame = bounds
         metalPageCurlView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         metalPageCurlView.isHidden = true
+        metalPageCurlView.delegate = self
         
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(panHandler(gesture:)))
         addGestureRecognizer(panGesture)
@@ -42,30 +45,30 @@ final class GMPageCurlView: UIView {
     
     @objc
     private func panHandler(gesture: UIPanGestureRecognizer) {
+        let translation = gesture.translation(in: self)
+        guard PanGestureTransformer.shouldTransform(translation) else { return }
+        
         if gesture.state == .began {
             // intentially not using topSubview's frame here, since if it doesn't match the size
             // of curl view, the behavior is pretty much undefined (book has non-uniform page sizes)
             let imageRenderer = UIGraphicsImageRenderer(size: frame.size)
 
-            /// - todo: check direction before rendering
             let image = imageRenderer.image { (ctx) in
                 self.layer.render(in: ctx.cgContext)
             }
-
-            //removeGestureRecognizer(gesture)
+            
             isUserInteractionEnabled = false
             
-            metalPageCurlView.beginFlip(with: image.cgImage!)
+            metalPageCurlView.beginFlip(with: image.cgImage!, flipDirection: MetalPageCurlView.FlipDirection(translation))
         }
         
         if gesture.state == .changed {
-            let translation = gesture.translation(in: self)
             metalPageCurlView.updateFlip(translation: translation)
         }
         
         if gesture.state == .ended {
             isUserInteractionEnabled = true /// - todo: only after flip back / forward animtion ends
-            metalPageCurlView.endFlip()
+            metalPageCurlView.endFlip(flipAnimationThreshold: flipAnimationThreshold)
         }
     }
     
@@ -103,4 +106,14 @@ final class GMPageCurlView: UIView {
         label.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         return view
     }()
+}
+
+extension GMPageCurlView: MetalCurlViewDelegate {
+    func didStart(flipAnimation inView: MetalPageCurlView) {
+        return
+    }
+    
+    func didFinish(flipAnimation inView: MetalPageCurlView) {
+        isUserInteractionEnabled = true
+    }
 }
