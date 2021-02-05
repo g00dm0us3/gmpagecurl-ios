@@ -32,13 +32,12 @@ final class MetalPageCurlView: UIView {
     
     weak var delegate: MetalCurlViewDelegate?
     
-    var isRunningAnimation: Bool {
-        return flipDirection != .unknown
-    }
+    private(set) var isRunningAnimation = false
     
     override var isHidden: Bool {
         get { return super.isHidden }
         set {
+            print("Is Hidden: \(newValue)")
             super.isHidden = newValue
             caDisplayLink.isPaused = newValue
         }
@@ -101,14 +100,14 @@ final class MetalPageCurlView: UIView {
         
         if self.flipDirection == .forward {
             if raw <= curlParams.delta {
-                self.flipDirection = .backward
-            } else {
                 self.flipDirection = .forward
+            } else {
+                self.flipDirection = .backward
             }
         } else {
-            /// - todo: should do the same check here, as above (animation threshold)
             self.flipDirection = .backward
         }
+        isRunningAnimation = true
         isUserInteractionEnabled = false
         if isRunningAnimation {
             delegate?.didStart(flipAnimation: self)
@@ -125,33 +124,23 @@ final class MetalPageCurlView: UIView {
         } else {
             renderer.render(to: drawable, with: curlParams, viewTexture: placeholderTexture)
         }
-        
-        /// - todo: flip direction not enough, to see if animation should roll
-        switch flipDirection {
-        
-        }
-        
-        if isRunningFlipForward {
-            isRunningFlipForward = flipForwardStep()
-            if !isRunningFlipForward {
-                inflightPage = nil
-                isHidden = true
+
+        if isRunningAnimation {
+            switch flipDirection {
+            case .forward:
+                isRunningAnimation = flipForwardStep()
+            case .backward:
+                isRunningAnimation = flipBackStep()
+            case .unknown:
+                isRunningAnimation = false
             }
-            flipDirection = .unknown
-        }
-        
-        if isRunningPlayBack {
-            isRunningPlayBack = flipBackStep()
             
-            if !isRunningPlayBack {
+            if !isRunningAnimation {
+                flipDirection = .unknown
                 inflightPage = nil
                 isHidden = true
+                delegate?.didFinish(flipAnimation: self)
             }
-            flipDirection = .unknown
-        }
-        
-        if !isRunningAnimation {
-            delegate?.didFinish(flipAnimation: self)
         }
     }
 
