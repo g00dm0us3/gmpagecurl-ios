@@ -17,7 +17,6 @@ class ViewController: UIViewController {
 
         renderingView = GMPageCurlView()
         renderingView.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = .blue
         view.addSubview(renderingView)
 
         renderingView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
@@ -27,10 +26,6 @@ class ViewController: UIViewController {
         renderingView.dataSource = self
         renderingView.loadPages()
     }
-    
-    override func viewDidLayoutSubviews() {
-        
-    }
 }
 
 extension ViewController: GMPageCurlDatasource {
@@ -38,8 +33,13 @@ extension ViewController: GMPageCurlDatasource {
         return PageView(frame: .zero)
     }
     
-    func updatePageView(_ view: UIView, pageIndex: UInt32) {
+    func updatePageView(_ view: UIView, pageIndex: UInt32, numberOfPages: UInt32) {
         let page = view as! PageView
-        page.text = "Page #\(pageIndex)"
+        page.text = "Page index: \(pageIndex), page number: \(pageIndex+1)"
+        page.setPageNumber(pageIndex+1, numberOfPages: numberOfPages)
+    }
+    
+    func numberOfPages() -> UInt32 {
+        return 20
     }
 }

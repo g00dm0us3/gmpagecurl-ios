@@ -10,6 +10,7 @@ import UIKit
 
 final class PageView: GMPageView {
     private var textView: UITextView
+    private var pageNumber: UILabel
     
     var text: String? {
         get {
@@ -20,20 +21,34 @@ final class PageView: GMPageView {
         }
     }
     
+    func setPageNumber(_ pageNumber: UInt32, numberOfPages: UInt32) {
+        self.pageNumber.text = "\(pageNumber) of \(numberOfPages)"
+    }
+    
     override init(frame: CGRect) {
         textView = UITextView()
+        pageNumber = UILabel()
+        
         super.init(frame: frame)
         textView.isScrollEnabled = false
         textView.isEditable = false
         addSubview(textView)
+        addSubview(pageNumber)
         backgroundColor = .white
         textView.translatesAutoresizingMaskIntoConstraints = false
         
-        textView.topAnchor.constraint(equalTo: topAnchor, constant: 8).isActive = true
-        textView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8).isActive = true
+        pageNumber.translatesAutoresizingMaskIntoConstraints = false
+        pageNumber.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16).isActive = true
+        pageNumber.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        pageNumber.heightAnchor.constraint(equalToConstant: 20).isActive = true
         
-        textView.leftAnchor.constraint(equalTo: leftAnchor, constant: 16).isActive = true
-        textView.rightAnchor.constraint(equalTo: rightAnchor, constant: -16).isActive = true
+        textView.topAnchor.constraint(equalTo: topAnchor, constant: 32).isActive = true
+        textView.bottomAnchor.constraint(equalTo: pageNumber.topAnchor, constant: -16).isActive = true
+        
+        textView.leftAnchor.constraint(equalTo: leftAnchor, constant: 50).isActive = true
+        textView.rightAnchor.constraint(equalTo: rightAnchor, constant: -50).isActive = true
+        textView.font = UIFont.systemFont(ofSize: 24)
+        
     }
     
     required init?(coder: NSCoder) {

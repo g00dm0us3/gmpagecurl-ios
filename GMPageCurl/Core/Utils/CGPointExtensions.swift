@@ -46,4 +46,8 @@ extension CGPoint {
     func dot(_ vec: CGPoint) -> CGFloat {
         return x*vec.x+y*vec.y
     }
+    
+    static func *(lhs: CGFloat, rhs: CGPoint) -> CGPoint{
+        return CGPoint(x: lhs*rhs.x, y: lhs*rhs.y)
+    }
 }

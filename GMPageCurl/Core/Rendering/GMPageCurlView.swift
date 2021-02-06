@@ -10,14 +10,16 @@ import UIKit
 
 protocol GMPageCurlDatasource: class {
     func makePageView() -> UIView
-    func updatePageView(_ view: UIView, pageIndex: UInt32)
+    func updatePageView(_ view: UIView, pageIndex: UInt32, numberOfPages: UInt32)
+    func numberOfPages() -> UInt32
 }
 
 final class GMPageCurlView: UIView {
     
     weak var dataSource: GMPageCurlDatasource?
     
-    private(set) var currentPageIndex = UInt32(100)
+    private(set) var pageIndex = UInt32(0)
+    private(set) var numberOfPages = UInt32(0)
     
     private let metalPageCurlView = MetalPageCurlView()
     
@@ -43,7 +45,7 @@ final class GMPageCurlView: UIView {
         offScreenPage?.removeFromSuperview()
         onScreenPage = nil
         offScreenPage = nil
-        currentPageIndex = 100
+        pageIndex = 0
         
         guard let ds = dataSource else { return }
        
@@ -62,19 +64,23 @@ final class GMPageCurlView: UIView {
         offScreenPage?.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         sendSubviewToBack(offScreenPage!)
         
-        ds.updatePageView(onScreenPage!, pageIndex: currentPageIndex)
-        ds.updatePageView(offScreenPage!, pageIndex: currentPageIndex)
+        numberOfPages = ds.numberOfPages()
+        
+        ds.updatePageView(onScreenPage!, pageIndex: pageIndex, numberOfPages: numberOfPages)
+        ds.updatePageView(offScreenPage!, pageIndex: pageIndex, numberOfPages: numberOfPages)
     }
     
-    var y = 0
     @objc
     private func panHandler(gesture: UIPanGestureRecognizer) {
-        y += 1
-        let translation = gesture.translation(in: self)
+        var translation = gesture.translation(in: self)
+        let translationLength = translation.length().clamp(to: 0.1...CGFloat.greatestFiniteMagnitude)
+        
+        translation = translationLength*translation.normalize()
         
         let flipDirection = FlipDirection(translation)
         
-        guard !(flipDirection == .backward && currentPageIndex == 0) else { return }
+        guard !(flipDirection == .backward && pageIndex == 0) else { return }
+        guard !(flipDirection == .forward && pageIndex == numberOfPages) else { return }
         
         if gesture.state == .began {
             // intentially not using topSubview's frame here, since if it doesn't match the size
@@ -89,14 +95,14 @@ final class GMPageCurlView: UIView {
                     self.layer.render(in: ctx.cgContext)
                 }
                 
-                currentPageIndex += 1
-                dataSource?.updatePageView(onScreenPage!, pageIndex: currentPageIndex)
+                pageIndex += 1
+                dataSource?.updatePageView(onScreenPage!, pageIndex: pageIndex, numberOfPages: numberOfPages)
             }
             
             
             if flipDirection == .backward {
-                currentPageIndex -= 1
-                dataSource?.updatePageView(offScreenPage!, pageIndex: currentPageIndex)
+                pageIndex -= 1
+                dataSource?.updatePageView(offScreenPage!, pageIndex: pageIndex, numberOfPages: numberOfPages)
                 
                 image = imageRenderer.image { (ctx) in
                     self.offScreenPage!.layer.render(in: ctx.cgContext)
@@ -125,7 +131,7 @@ final class GMPageCurlView: UIView {
 extension GMPageCurlView: MetalCurlViewDelegate {
     func willFinish(flipAnimationDirection: FlipDirection) {
         guard flipAnimationDirection == .backward else { return }
-        dataSource?.updatePageView(onScreenPage!, pageIndex: currentPageIndex)
+        dataSource?.updatePageView(onScreenPage!, pageIndex: pageIndex, numberOfPages: numberOfPages)
     }
     
     func didStart(flipAnimationDirection: FlipDirection) {
