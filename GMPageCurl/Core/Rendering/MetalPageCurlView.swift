@@ -9,26 +9,29 @@
 import UIKit
 import MetalKit
 
+enum FlipDirection: Equatable {
+    case unknown
+    case forward
+    case backward
+    
+    init(_ translation: CGPoint) {
+        if translation.x > 0 {
+            self = .backward
+            return
+        }
+        self = .forward
+    }
+}
+
 protocol MetalCurlViewDelegate: class {
-    func didStart(flipAnimation inView: MetalPageCurlView)
-    func didFinish(flipAnimation inView: MetalPageCurlView)
+    func didStart(flipAnimationDirection: FlipDirection)
+    func didFinish(flipAnimationDirection: FlipDirection)
+    func willFinish(flipAnimationDirection: FlipDirection)
 }
 
 /// - TODO: implement sampleCount (MSAA)
 final class MetalPageCurlView: UIView {
-    enum FlipDirection: Equatable {
-        case unknown
-        case forward
-        case backward
-        
-        init(_ translation: CGPoint) {
-            if translation.x > 0 {
-                self = .backward
-                return
-            }
-            self = .forward
-        }
-    }
+    
     
     weak var delegate: MetalCurlViewDelegate?
     
@@ -37,7 +40,6 @@ final class MetalPageCurlView: UIView {
     override var isHidden: Bool {
         get { return super.isHidden }
         set {
-            print("Is Hidden: \(newValue)")
             super.isHidden = newValue
             caDisplayLink.isPaused = newValue
         }
@@ -81,7 +83,6 @@ final class MetalPageCurlView: UIView {
         guard !isRunningAnimation else { return }
         
         let textureLoader = MTKTextureLoader(device: DeviceWrapper.device)
-       // do {
         inflightPage = try! textureLoader.newTexture(cgImage: pageImage, options: nil)
         isHidden = false
         self.flipDirection = flipDirection
@@ -94,23 +95,13 @@ final class MetalPageCurlView: UIView {
         }
     }
     
-    func endFlip(flipAnimationThreshold: PageTurnProgress) {
-        let raw = flipAnimationThreshold.rawValue
+    func endFlip() {
         guard !isRunningAnimation else { return }
-        
-        if self.flipDirection == .forward {
-            if raw <= curlParams.delta {
-                self.flipDirection = .forward
-            } else {
-                self.flipDirection = .backward
-            }
-        } else {
-            self.flipDirection = .backward
-        }
+
         isRunningAnimation = true
         isUserInteractionEnabled = false
         if isRunningAnimation {
-            delegate?.didStart(flipAnimation: self)
+            delegate?.didStart(flipAnimationDirection: flipDirection)
         }
     }
 
@@ -135,11 +126,15 @@ final class MetalPageCurlView: UIView {
                 isRunningAnimation = false
             }
             
+            if isLastFlipAnimationStep() {
+                delegate?.willFinish(flipAnimationDirection: flipDirection)
+            }
+            
             if !isRunningAnimation {
-                flipDirection = .unknown
                 inflightPage = nil
                 isHidden = true
-                delegate?.didFinish(flipAnimation: self)
+                delegate?.didFinish(flipAnimationDirection: flipDirection)
+                flipDirection = .unknown
             }
         }
     }
@@ -168,6 +163,14 @@ final class MetalPageCurlView: UIView {
         curlParams = newParams
         
         return true
+    }
+    
+    private func isLastFlipAnimationStep() -> Bool {
+        if flipDirection == .backward {
+            return !(curlParams.delta - playBackStep > 0)
+        } else {
+            return !(curlParams.delta + playBackStep < 2.0)
+        }
     }
     
     private func buildPlaceholderTexture(_ drawable: CAMetalDrawable) {

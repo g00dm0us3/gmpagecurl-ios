@@ -24,19 +24,19 @@ final class PageView: GMPageView {
         textView = UITextView()
         super.init(frame: frame)
         textView.isScrollEnabled = false
+        textView.isEditable = false
+        addSubview(textView)
+        backgroundColor = .white
+        textView.translatesAutoresizingMaskIntoConstraints = false
+        
+        textView.topAnchor.constraint(equalTo: topAnchor, constant: 8).isActive = true
+        textView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8).isActive = true
+        
+        textView.leftAnchor.constraint(equalTo: leftAnchor, constant: 16).isActive = true
+        textView.rightAnchor.constraint(equalTo: rightAnchor, constant: -16).isActive = true
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    override func prepareForReuse() {
-        textView.text = nil
-    }
-    // Only override draw() if you perform custom drawing.
-    // An empty implementation adversely affects performance during animation.
-    override func draw(_ rect: CGRect) {
-        textView.frame = CGRect(x: 8, y: 8, width: rect.width - 8, height: rect.height - 8)
-    }
-
 }

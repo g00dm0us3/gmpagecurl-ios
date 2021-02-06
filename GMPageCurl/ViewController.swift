@@ -24,5 +24,22 @@ class ViewController: UIViewController {
         renderingView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
         renderingView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         renderingView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+        renderingView.dataSource = self
+        renderingView.loadPages()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        
+    }
+}
+
+extension ViewController: GMPageCurlDatasource {
+    func makePageView() -> UIView {
+        return PageView(frame: .zero)
+    }
+    
+    func updatePageView(_ view: UIView, pageIndex: UInt32) {
+        let page = view as! PageView
+        page.text = "Page #\(pageIndex)"
     }
 }
