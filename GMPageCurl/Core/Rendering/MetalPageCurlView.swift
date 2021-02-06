@@ -32,16 +32,22 @@ protocol MetalCurlViewDelegate: class {
 /// - TODO: implement sampleCount (MSAA)
 final class MetalPageCurlView: UIView {
     
-    
     weak var delegate: MetalCurlViewDelegate?
     
     private(set) var isRunningAnimation = false
+    
+    private(set) var flipDirection = FlipDirection.unknown
     
     override var isHidden: Bool {
         get { return super.isHidden }
         set {
             super.isHidden = newValue
             caDisplayLink.isPaused = newValue
+            
+            if isHidden {
+                isRunningAnimation = false
+                curlParams = .noCurl
+            }
         }
     }
     
@@ -57,7 +63,6 @@ final class MetalPageCurlView: UIView {
     private var placeholderTexture: MTLTexture!
     private var inflightPage: MTLTexture?
     
-    private var flipDirection = FlipDirection.unknown
     // MARK: Initializers
     override init(frame: CGRect) {
         self.renderer = CurlRenderer()
@@ -80,7 +85,7 @@ final class MetalPageCurlView: UIView {
     
     // MARK: Public interface
     func beginFlip(with pageImage: CGImage, flipDirection: FlipDirection) {
-        guard !isRunningAnimation else { return }
+        guard !isRunningAnimation else { print("⚠️ Trying to begin flip while animation is running"); return }
         
         let textureLoader = MTKTextureLoader(device: DeviceWrapper.device)
         inflightPage = try! textureLoader.newTexture(cgImage: pageImage, options: nil)
@@ -89,14 +94,14 @@ final class MetalPageCurlView: UIView {
     }
     
     func updateFlip(translation: CGPoint) {
-        guard !isRunningAnimation else { return }
+        guard !isRunningAnimation else { print("⚠️ Trying to update flip while animation is running"); return }
         if PanGestureTransformer.shouldTransform(translation) {
             curlParams = transformer.transform(translation: translation, in: self.bounds)
         }
     }
     
     func endFlip() {
-        guard !isRunningAnimation else { return }
+        guard !isRunningAnimation else { print("⚠️ Trying to end flip while animation is running"); return }
 
         isRunningAnimation = true
         isUserInteractionEnabled = false

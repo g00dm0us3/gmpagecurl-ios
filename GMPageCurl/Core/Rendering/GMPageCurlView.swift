@@ -79,10 +79,13 @@ final class GMPageCurlView: UIView {
         
         let flipDirection = FlipDirection(translation)
         
-        guard !(flipDirection == .backward && pageIndex == 0) else { return }
-        guard !(flipDirection == .forward && pageIndex == numberOfPages) else { return }
-        
+        /// - todo: get rid of jerking, on back flip, direction is determined incorrectly
         if gesture.state == .began {
+            
+            /// - todo: forcefully reset curl state, to prevent flip animation shutdown (isAnimationRunningFlag not set to false)
+            guard !(flipDirection == .backward && pageIndex == 0) else { return }
+            guard !(flipDirection == .forward && pageIndex == numberOfPages) else { return }
+            guard metalPageCurlView.isHidden else { return }
             // intentially not using topSubview's frame here, since if it doesn't match the size
             // of curl view, the behavior is pretty much undefined (book has non-uniform page sizes)
             let imageRenderer = UIGraphicsImageRenderer(size: frame.size)
@@ -140,5 +143,6 @@ extension GMPageCurlView: MetalCurlViewDelegate {
     
     func didFinish(flipAnimationDirection: FlipDirection) {
         isUserInteractionEnabled = true
+        metalPageCurlView.isHidden = true
     }
 }
