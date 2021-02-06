@@ -72,20 +72,25 @@ final class GMPageCurlView: UIView {
     
     @objc
     private func panHandler(gesture: UIPanGestureRecognizer) {
+        guard gesture.state != .cancelled else { return }
         var translation = gesture.translation(in: self)
         let translationLength = translation.length().clamp(to: 0.1...CGFloat.greatestFiniteMagnitude)
         
         translation = translationLength*translation.normalize()
         
-        let flipDirection = FlipDirection(translation)
-        
         /// - todo: get rid of jerking, on back flip, direction is determined incorrectly
         if gesture.state == .began {
-            
+            let touchLocation = gesture.location(ofTouch: 0, in: self)
+            let flipDirection = touchLocation.x < self.bounds.width/2 ? FlipDirection.backward : FlipDirection.forward
             /// - todo: forcefully reset curl state, to prevent flip animation shutdown (isAnimationRunningFlag not set to false)
-            guard !(flipDirection == .backward && pageIndex == 0) else { return }
-            guard !(flipDirection == .forward && pageIndex == numberOfPages) else { return }
+            guard !(flipDirection == .backward && pageIndex == 0) else {
+                gesture.state = .cancelled
+                return }
+            guard !(flipDirection == .forward && pageIndex == numberOfPages) else {
+                gesture.state = .cancelled
+                return }
             guard metalPageCurlView.isHidden else { return }
+            
             // intentially not using topSubview's frame here, since if it doesn't match the size
             // of curl view, the behavior is pretty much undefined (book has non-uniform page sizes)
             let imageRenderer = UIGraphicsImageRenderer(size: frame.size)

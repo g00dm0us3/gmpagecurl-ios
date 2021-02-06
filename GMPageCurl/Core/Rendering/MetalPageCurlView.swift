@@ -44,7 +44,7 @@ final class MetalPageCurlView: UIView {
             super.isHidden = newValue
             caDisplayLink.isPaused = newValue
             
-            if isHidden {
+            if newValue {
                 isRunningAnimation = false
                 curlParams = .noCurl
             }
@@ -89,8 +89,8 @@ final class MetalPageCurlView: UIView {
         
         let textureLoader = MTKTextureLoader(device: DeviceWrapper.device)
         inflightPage = try! textureLoader.newTexture(cgImage: pageImage, options: nil)
-        isHidden = false
         self.flipDirection = flipDirection
+        isHidden = false
     }
     
     func updateFlip(translation: CGPoint) {
