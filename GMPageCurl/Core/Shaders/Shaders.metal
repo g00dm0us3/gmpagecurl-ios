@@ -12,7 +12,7 @@
 
 #define PI 3.1415926535897932384626433832795
 #define SQRT_3 1.73205081
-#define CYLINDER_RADIUS 0.30
+#define CYLINDER_RADIUS 0.1
 
 #define PHI_EPSILON 1e-2
 #define EPSILON 1e-6
@@ -156,7 +156,7 @@ inline float4 calculate_position(packed_float3 position, float phi, float xCoord
     float len = distance(pointOnInflectionBorder, pointOnPlane);
     
     if(isOnWall) {
-        pointOnBox = float3(pointOnInflectionBorder, len);
+        pointOnBox = float3(pointOnInflectionBorder, 2*len);
     } else if(isOnFloor) {
         pointOnBox = float3(pointOnPlane, 0);
     } else if(isOnRoof) { // it's on the roof
@@ -171,9 +171,9 @@ inline float4 calculate_position(packed_float3 position, float phi, float xCoord
         pointOnBox = float3(v, 2*CYLINDER_RADIUS);
     }
     
-    if (viewState == 1) { // for demo purposes, shows box
+    //if (viewState == 1) { // for demo purposes, shows box
         return float4(pointOnBox, 1);
-    }
+    //}
     
     float2 cylTangentOffsetVec = CYLINDER_RADIUS*float2(cos(phi), sin(phi));
     float2 pointOnCylinderTangent = pointOnInflectionBorder - cylTangentOffsetVec;
@@ -214,7 +214,7 @@ kernel void compute_positions(texture2d<float, access::write> transformed [[text
     
     float3 position = packed_float3(x, y, 0);
     
-    float4 pos = calculate_position(position, input.phi, input.xCoord, input.state);
+    float4 pos = calculate_position(position, /*input.phi*/0, input.xCoord, input.state);
     
     transformed.write(float4(pos.xyz, 1), tid);
 }
@@ -322,7 +322,7 @@ float calculate_shadow(float4 fragment_in_light_space, depth2d<float> depth) {
     float shadow_bias = 0.007;
     
     float shadow = 0;
-    float2 poissonDisc[4] = {
+    constexpr float2 poissonDisc[4] = {
         float2( -0.94201624, -0.39906216 ),
         float2( 0.94558609, -0.76890725 ),
         float2( -0.094184101, -0.92938870 ),
