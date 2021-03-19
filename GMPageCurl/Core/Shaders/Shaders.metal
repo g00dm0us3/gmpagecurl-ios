@@ -156,7 +156,7 @@ inline float4 calculate_position(packed_float3 position, float phi, float xCoord
     float len = distance(pointOnInflectionBorder, pointOnPlane);
     
     if(isOnWall) {
-        pointOnBox = float3(pointOnInflectionBorder, 2*len);
+        pointOnBox = float3(pointOnInflectionBorder, len);
     } else if(isOnFloor) {
         pointOnBox = float3(pointOnPlane, 0);
     } else if(isOnRoof) { // it's on the roof
@@ -172,7 +172,7 @@ inline float4 calculate_position(packed_float3 position, float phi, float xCoord
     }
     
     //if (viewState == 1) { // for demo purposes, shows box
-        return float4(pointOnBox, 1);
+    //    return float4(pointOnBox, 1);
     //}
     
     float2 cylTangentOffsetVec = CYLINDER_RADIUS*float2(cos(phi), sin(phi));
@@ -214,7 +214,7 @@ kernel void compute_positions(texture2d<float, access::write> transformed [[text
     
     float3 position = packed_float3(x, y, 0);
     
-    float4 pos = calculate_position(position, /*input.phi*/0, input.xCoord, input.state);
+    float4 pos = calculate_position(position, input.phi, input.xCoord, input.state);
     
     transformed.write(float4(pos.xyz, 1), tid);
 }

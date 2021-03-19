@@ -57,7 +57,7 @@ final class MetalPageCurlView: UIView {
     override class var layerClass: AnyClass { return CAMetalLayer.self }
 
     private var caDisplayLink: CADisplayLink!
-    private let transformer = PanGestureTransformer(maxPhi: CGFloat.pi/3, turnPageDistanceThreshold: 1.8)
+    private let transformer = PanGestureTransformer(maxPhi: CGFloat.pi/4-CGFloat(1).deg2rad(), turnPageDistanceThreshold: 1.8)
     private let playBackStep = Float(0.09)
 
     private var placeholderTexture: MTLTexture!

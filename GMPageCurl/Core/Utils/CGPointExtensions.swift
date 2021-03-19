@@ -13,6 +13,10 @@ extension CGFloat {
     func rad2deg() -> CGFloat {
         return (self * 180) / CGFloat.pi
     }
+    
+    func deg2rad() -> CGFloat {
+        return (CGFloat.pi * self) / 180
+    }
 
     @inline(__always)
     func rescale(_ oldRange: ClosedRange<CGFloat>, newRange: ClosedRange<CGFloat>) -> CGFloat {

@@ -132,7 +132,7 @@ internal final class CurlRenderingContext {
 
     // MARK: Private Interface
     private func initMatrices() {
-        perspectiveMatrix = MatrixUtils.matrix_ortho(left: -1, right: 1, bottom: -1, top: 1, near: 1, far: -1)//MatrixUtils.matrix_perspective(aspect: 1, fovy: 90.0, near: 0.1, far: 100)
+        perspectiveMatrix = MatrixUtils.matrix_ortho(left: -1, right: 1, bottom: -1, top: 1, near: 1, far: -1)/*MatrixUtils.matrix_perspective(aspect: 1, fovy: 90.0, near: 0.1, far: 100)*/
 
         let ortho = MatrixUtils.matrix_ortho(left: -1, right: 1, bottom: -1, top: 1, near: 1, far: -1)
         //let lightView = MatrixUtils.matrix_lookat(at: simd_float3(0,0,0), eye: simd_float3(0,0,-2), up: simd_float3(0,1,0))
