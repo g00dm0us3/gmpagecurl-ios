@@ -23,4 +23,5 @@ Color pass puts all of the above together, along with the texture of custom ```U
 - [ ] Fix weird bug around first page flip back / forward.
 - [ ] Implement MSAA toggle.
 - [ ] Lock in portrait orientation.
+- [] d𝛗/dx = C, 𝛗 -> 0 
 

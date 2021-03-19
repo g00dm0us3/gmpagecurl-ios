@@ -175,8 +175,7 @@ inline float4 calculate_position(packed_float3 position, float phi, float xCoord
     //    return float4(pointOnBox, 1);
     //}
     
-    float2 cylTangentOffsetVec = CYLINDER_RADIUS*float2(cos(phi), sin(phi));
-    float2 pointOnCylinderTangent = pointOnInflectionBorder - cylTangentOffsetVec;
+    float2 pointOnCylinderTangent = get_point_on_inflection_border(pointOnInflectionBorder, phi, xCoord);
     
     float3 pointOnCylinderAxis = float3(pointOnCylinderTangent.xy, CYLINDER_RADIUS);
     float3 axisToBoxVec = float3(pointOnBox - pointOnCylinderAxis);
