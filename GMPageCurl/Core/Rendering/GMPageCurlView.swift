@@ -128,7 +128,7 @@ final class GMPageCurlView: UIView {
             return
         }
         
-        //metalPageCurlView.endFlip()
+        metalPageCurlView.endFlip()
     }
     
     required init?(coder: NSCoder) {
